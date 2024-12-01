@@ -30,46 +30,37 @@
 
         int Part1(string[] lines)
         {
-            List<int> leftList = [];
-            List<int> rightList = [];
+            List<int> left = [];
+            List<int> right = [];
 
             foreach (var line in lines)
             {
-                var parts = line.ToInts(" ");
-                leftList.Add(parts[0]);
-                rightList.Add(parts[1]);
+                var (l, r) = line.ToInts2(" ");
+                left.Add(l);
+                right.Add(r);
             }
 
-            leftList.Sort();
-            rightList.Sort();
+            left.Sort();
+            right.Sort();
 
-            return leftList
-                .Zip(rightList, (l, r) => Math.Abs(r - l))
+            return left
+                .Zip(right, (l, r) => Math.Abs(r - l))
                 .Sum();
         }
 
         int Part2(string[] lines)
         {
-            List<int> leftList = [];
-            Dictionary<int, int> rightList = [];
+            List<int> left = [];
+            Dictionary<int, int> right = [];
 
             foreach (var line in lines)
             {
-                var parts = line.ToInts(" ");
-                leftList.Add(parts[0]);
-                var r = parts[1];
-                rightList.TryGetValue(r, out var count);
-                count++;
-                rightList[r] = count;
+                var (l, r) = line.ToInts2(" ");
+                left.Add(l);
+                CollectionsMarshal.GetValueRefOrAddDefault(right, r, out _) += 1;
             }
 
-            return leftList
-                .Select(l => 
-                {
-                    rightList.TryGetValue(l, out var count);
-                    return l * count;
-                })
-                .Sum();
+            return left.Sum(l => l * right.GetValueOrDefault(l));
         }
     }
 }
