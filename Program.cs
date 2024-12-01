@@ -6,7 +6,7 @@ typeof(Aoc2024).GetMethods(BindingFlags.Static | BindingFlags.Public)
     .Where(m => m.Name != "DayTemplate")
     .OrderByDescending(m => m.Name.Length)
     .ThenByDescending(m => m.Name)
-    .Skip(2).Take(1).ToList()
+    .ToList()
     .ForEach(m => 
     {
         Console.Write(m.Name.PadLeft(5));
