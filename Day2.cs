@@ -46,29 +46,17 @@
                 return true;
             }
 
-            // remove at index -1 if greater than 0
-            if (unsafeIndex > 0)
+            // retry at unsafeIndex-1 , unsafeIndex, unsafeIndex+1
+            for (var i = unsafeIndex > 0 ? unsafeIndex - 1 : unsafeIndex; i <= unsafeIndex + 1; i++)
             {
-                (isSafe, _) = IsSafeLevels([..values[..(unsafeIndex-1)], ..values[unsafeIndex..]]);
-
+                (isSafe, _) = IsSafeLevels([..values[..i], ..values[(i + 1)..]]);
                 if (isSafe)
                 {
                     return true;
                 }
             }
 
-            // remove at middle unsafe index
-            (isSafe, _) = IsSafeLevels([..values[..unsafeIndex], ..values[(unsafeIndex + 1)..]]);
-
-            if (isSafe)
-            {
-                return true;
-            }
-
-            // remove at last unsafe index
-            (isSafe, _) = IsSafeLevels([..values[..(unsafeIndex + 1)], ..values[(unsafeIndex + 2)..]]);
-
-            return isSafe;
+            return false;
         }
 
         static (bool, int) IsSafeLevels(int[] values)
