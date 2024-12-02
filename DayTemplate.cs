@@ -10,7 +10,7 @@
         {
             var input = 
                 """
-                abd
+                abc
                 """.ToLines();
             Part1(input).Should().Be(0);
             Part2(input).Should().Be(0);

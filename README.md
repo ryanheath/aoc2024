@@ -7,3 +7,6 @@ This year, I'll continue. Just for the kicks. 🎄😎
 
 ## Day 1
 Traditionally, this one was easy 🙂
+
+## Day 2
+Still easy-peasy. Don't forget the wrong value can be one earlier than you think 😉
