@@ -35,7 +35,7 @@
 
             foreach (var line in lines)
             {
-                var (l, r) = line.To2Ints(" ");
+                var (l, r) = line.AsSpan().To2Ints(" ");
                 left.Add(l);
                 right.Add(r);
             }
@@ -55,7 +55,7 @@
 
             foreach (var line in lines)
             {
-                var (l, r) = line.To2Ints(" ");
+                var (l, r) = line.AsSpan().To2Ints(" ");
                 left.Add(l);
                 CollectionsMarshal.GetValueRefOrAddDefault(right, r, out _) += 1;
             }

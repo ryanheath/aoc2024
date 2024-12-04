@@ -26,24 +26,6 @@ static class StringExtensions
 
     static public T[] ToNumerics<T>(this string input, string splitter, Func<string, T> parse) 
         => [.. input.Split(splitter, StringSplitOptions.RemoveEmptyEntries).Select(parse)];
-    static public (T i0, T i1) To2Numerics<T>(this string input, string splitter, Func<string, T> parse)
-        => input.ToNumerics(splitter, parse) switch
-        {
-            [T i0, T i1, ..] => (i0, i1),
-            _ => throw new InvalidOperationException()
-        };
-    static public (T i0, T i1, T i2) To3Numerics<T>(this string input, string splitter, Func<string, T> parse)
-        => input.ToNumerics(splitter, parse) switch
-        {
-            [T i0, T i1, T i2, ..] => (i0, i1, i2),
-            _ => throw new InvalidOperationException()
-        };
-    static public (T i0, T i1, T i3, T i4) To4Numerics<T>(this string input, string splitter, Func<string, T> parse)
-        => input.ToNumerics(splitter, parse) switch
-        {
-            [T i0, T i1, T i2, T i3, ..] => (i0, i1, i2, i3),
-            _ => throw new InvalidOperationException()
-        };
 
     static public (T i0, T i1) To2Numerics<T>(this ReadOnlySpan<char> input, string splitter, Func<ReadOnlySpan<char>, T> parse)
     {
@@ -70,10 +52,7 @@ static class StringExtensions
     static public long[] ToLongs(this string input, string splitter) => input.ToNumerics(splitter, long.Parse);
     static public ulong[] ToULongs(this string input, string splitter) => input.ToNumerics(splitter, ulong.Parse);
 
-    static public (int i0, int i1) To2Ints(this string input, string splitter) => input.To2Numerics(splitter, int.Parse);
-    static public (int i0, int i1, int i2) To3Ints(this string input, string splitter) => input.To3Numerics(splitter, int.Parse);
-    static public (int i0, int i1, int i2, int i3) To4Ints(this string input, string splitter) => input.To4Numerics(splitter, int.Parse);
-
+    static public (int i0, int i1) To2Ints(this ReadOnlySpan<char> input, string splitter) => input.To2Numerics(splitter, (ReadOnlySpan<char> args) => int.Parse(args));
     static public (long i0, long i1) To2Longs(this ReadOnlySpan<char> input, string splitter) => input.To2Numerics(splitter, (ReadOnlySpan<char> args) => long.Parse(args));
 
     static public IEnumerable<int[]> ToInts(this string[] lines, string splitter) => lines.Select(line => line.ToInts(splitter));
