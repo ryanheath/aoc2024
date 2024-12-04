@@ -22,18 +22,18 @@
                 MXMXAXMASX
                 """.ToLines();
             Part1(input).Should().Be(18);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(9);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(2507);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(1969);
         }
 
         int Part1(string[] lines) => Count(lines, "XMAS");
-        int Part2(string[] lines) => 0;
+        int Part2(string[] lines) => CountXMAS(lines);
 
         static int Count(string[] lines, string target) =>
             CountWord(TraverseHorizontal(lines), target)
@@ -167,6 +167,30 @@
                 // yield a separator between lines
                 yield return '\n';
             }
+        }
+    
+        static int CountXMAS(string[] lines)
+        {
+            var count = 0;
+
+            for (var y = 1; y < lines.Length - 1; y++)
+            for (var x = 1; x < lines[y].Length - 1; x++)
+            {
+                if (lines[y][x] != 'A') continue;
+
+                _ = (lines[y - 1][x - 1], lines[y + 1][x + 1],
+                     lines[y + 1][x - 1], lines[y - 1][x + 1]) 
+                switch
+                {
+                    ('S', 'M', 'S', 'M') => count++,
+                    ('S', 'M', 'M', 'S') => count++,
+                    ('M', 'S', 'S', 'M') => count++,
+                    ('M', 'S', 'M', 'S') => count++,
+                    _ => 0
+                };
+            }
+
+            return count;
         }
     }
 }
