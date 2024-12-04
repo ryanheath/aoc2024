@@ -182,9 +182,9 @@
                      lines[y + 1][x - 1], lines[y - 1][x + 1]) 
                 switch
                 {
-                    ('S', 'M', 'S', 'M') => count++,
-                    ('S', 'M', 'M', 'S') => count++,
-                    ('M', 'S', 'S', 'M') => count++,
+                    ('S', 'M', 'S', 'M') or
+                    ('S', 'M', 'M', 'S') or
+                    ('M', 'S', 'S', 'M') or
                     ('M', 'S', 'M', 'S') => count++,
                     _ => 0
                 };
