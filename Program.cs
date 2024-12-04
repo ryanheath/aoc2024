@@ -3,6 +3,9 @@
     Console.WriteLine("Start");
     var totalMs = 0d;
     var totalMem = 0L;
+
+    // warmup
+    Aoc2024.DayTemplate();
     
     typeof(Aoc2024).GetMethods(BindingFlags.Static | BindingFlags.Public)
         .Where(m => m.Name.StartsWith("Day"))

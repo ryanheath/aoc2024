@@ -45,6 +45,27 @@ static class StringExtensions
             _ => throw new InvalidOperationException()
         };
 
+    static public (T i0, T i1) To2Numerics<T>(this ReadOnlySpan<char> input, string splitter, Func<ReadOnlySpan<char>, T> parse)
+    {
+        var enumerator = input.Split(splitter);
+        T i0 = parse(input[MoveNext(ref enumerator)]);
+        T i1 = parse(input[MoveNext(ref enumerator)]);
+
+        return (i0, i1);
+
+        static Range MoveNext(ref MemoryExtensions.SpanSplitEnumerator<char> enumerator)
+        {
+            if (!enumerator.MoveNext()) throw new InvalidOperationException();
+            var r = enumerator.Current;
+            while (r.Start.Equals(r.End))
+            {
+                if (!enumerator.MoveNext()) throw new InvalidOperationException();
+                r = enumerator.Current;
+            }
+            return r;
+        }
+    }
+
     static public int[] ToInts(this string input, string splitter) => input.ToNumerics(splitter, int.Parse);
     static public long[] ToLongs(this string input, string splitter) => input.ToNumerics(splitter, long.Parse);
     static public ulong[] ToULongs(this string input, string splitter) => input.ToNumerics(splitter, ulong.Parse);
@@ -52,6 +73,8 @@ static class StringExtensions
     static public (int i0, int i1) To2Ints(this string input, string splitter) => input.To2Numerics(splitter, int.Parse);
     static public (int i0, int i1, int i2) To3Ints(this string input, string splitter) => input.To3Numerics(splitter, int.Parse);
     static public (int i0, int i1, int i2, int i3) To4Ints(this string input, string splitter) => input.To4Numerics(splitter, int.Parse);
+
+    static public (long i0, long i1) To2Longs(this ReadOnlySpan<char> input, string splitter) => input.To2Numerics(splitter, (ReadOnlySpan<char> args) => long.Parse(args));
 
     static public IEnumerable<int[]> ToInts(this string[] lines, string splitter) => lines.Select(line => line.ToInts(splitter));
 

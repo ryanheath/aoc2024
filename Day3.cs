@@ -29,46 +29,41 @@ static partial class Aoc2024
             Part2(input).Should().Be(83595109L);
         }
 
-        long Part1(string[] lines) => RunInstructions(lines, ignoreDo: true);
-        long Part2(string[] lines) => RunInstructions(lines, ignoreDo: false);
+        long Part1(string[] lines) => RunInstructions(lines, doMode: false);
+        long Part2(string[] lines) => RunInstructions(lines, doMode: true);
 
-        long RunInstructions(string[] lines, bool ignoreDo)
+        long RunInstructions(string[] lines, bool doMode)
         {
-            var mulRegex = InstructionsRegex();
             var sum = 0L;
             var doSum = true;
+            
 
             foreach (var line in lines)
-            foreach (Match match in mulRegex.Matches(line))
+            foreach (var match in InstructionsRegex.EnumerateMatches(line))
             {
-                if (match.Groups[xMUL].Success)
+                var instruction = line.AsSpan(match.Index, match.Length);
+                sum += instruction switch
                 {
-                    MUL(match.Groups[xMUL1].Value, match.Groups[xMUL2].Value);
-                }
-                else if (match.Groups[xDO].Success)
-                {
-                    DO();
-                }
-                else if (match.Groups[xDONT].Success)
-                {
-                    DONT();
-                }
+                    ['m', ..] => doSum ? MUL(line.AsSpan(match.Index + 4, match.Length - 5)) : 0,
+                    ['d', 'o', 'n', ..] => DONT(),
+                    ['d', ..] => DO(),
+                    _ => 0
+                };
             }
 
             return sum;
 
-            void MUL(string a, string b) { if (doSum) { sum += a.ToLong() * b.ToLong(); } }
-            void DO()   { if (!ignoreDo) { doSum = true;  } }
-            void DONT() { if (!ignoreDo) { doSum = false; } }
+            static long MUL(ReadOnlySpan<char> args)
+            {
+                var (a, b) = args.To2Longs(",");
+                return a * b;
+            }
+
+            long DO()   { if (doMode) { doSum = true; } return 0; }
+            long DONT() { if (doMode) { doSum = false; } return 0; }
         }
     }
 
-    const string xMUL = "mul";
-    const string xMUL1 = "mul1";
-    const string xMUL2 = "mul2";
-    const string xDO = "do";
-    const string xDONT = "dont";
-
-    [GeneratedRegex(@$"(?<{xMUL}>mul)\((?<{xMUL1}>\d+),(?<{xMUL2}>\d+)\)|(?<{xDO}>do)\(\)|(?<{xDONT}>don't)\(\)")]
-    private static partial Regex InstructionsRegex();
+    [GeneratedRegex(@"mul\(\d+,\d+\)|do\(\)|don't\(\)")]
+    private static partial Regex InstructionsRegex { get; }
 }
