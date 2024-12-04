@@ -87,4 +87,98 @@ static class StringExtensions
     }
 
     public static string ReverseString(this string s) => new([..s.Reverse()]);
+
+    public static IEnumerable<char> TraverseHorizontal(this string[] lines)
+    {
+        for (var y = 0; y < lines.Length; y++)
+        {
+            for (var x = 0; x < lines[y].Length; x++)
+            {
+                yield return lines[y][x];
+            }
+
+            // yield a separator between lines
+            yield return '\n';
+        }
+    }
+
+    public static IEnumerable<char> TraverseVertical(this string[] lines)
+    {
+        for (var x = 0; x < lines[0].Length; x++)
+        {
+            for (var y = 0; y < lines.Length; y++)
+            {
+                yield return lines[y][x];
+            }
+
+            // yield a separator between lines
+            yield return '\n';
+        }
+    }
+
+    public static IEnumerable<char> TraverseDiagonal(this string[] lines)
+    {
+        for (var y = 0; y < lines.Length; y++)
+        {
+            foreach (var c in TraverseLine(y, 0))
+            {
+                yield return c;
+            }
+        }
+
+        for (var x = 1; x < lines[0].Length; x++)
+        {
+            foreach (var c in TraverseLine(0, x))
+            {
+                yield return c;
+            }
+        }
+
+        IEnumerable<char> TraverseLine(int y, int x)
+        {
+            while (y < lines.Length && x < lines[y].Length)
+            {
+                yield return lines[y][x];
+
+                y++;
+                x++;
+            }
+
+            // yield a separator between lines
+            yield return '\n';
+        }
+    }
+
+    public static IEnumerable<char> TraverseDiagonalBackwards(this string[] lines)
+    {
+        for (var y = 0; y < lines.Length; y++)
+        {
+            foreach (var c in TraverseLine(y, lines[y].Length - 1))
+            {
+                yield return c;
+            }
+        }
+
+        for (var x = lines[0].Length - 2; x >= 0; x--)
+        {
+            foreach (var c in TraverseLine(0, x))
+            {
+                yield return c;
+            }
+        }
+
+        IEnumerable<char> TraverseLine(int y, int x)
+        {
+            while (y < lines.Length && x >= 0)
+            {
+                yield return lines[y][x];
+
+                y++;
+                x--;
+            }
+
+            // yield a separator between lines
+            yield return '\n';
+        }
+    }
 }
