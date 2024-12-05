@@ -40,7 +40,7 @@
                 97,13,75,29,47
                 """.ToLines();
             Part1(input).Should().Be(143);
-            Part2(input).Should().Be(123);
+            Part2(input).Should().Be(6142);
         }
 
         void Compute()
@@ -77,7 +77,35 @@
 
             bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(compare));
         }
-        int Part2(string[] lines) => 0;
+        int Part2(string[] lines)
+        {
+            HashSet<(int, int)> rules = [];
+            List<int[]> pages = [];
+            ComparePages compare = new(rules);
+
+            Parse();
+
+            return pages
+                .Where(x => !SortedCorrectly(x))
+                .Sum(x => x.Order(compare).ElementAt(x.Length/2));
+
+            void Parse()
+            {
+                var i = 0;
+                for (i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+                    if (line == "") break;
+                    rules.Add(line.AsSpan().To2Ints("|"));
+                }
+                for (i++; i < lines.Length; i++)
+                {
+                    pages.Add(lines[i].ToInts(","));
+                }
+            }
+
+            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(compare));
+        }
     }
 
     class ComparePages(HashSet<(int, int)> rules) : IComparer<int>
