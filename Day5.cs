@@ -40,7 +40,7 @@
                 97,13,75,29,47
                 """.ToLines();
             Part1(input).Should().Be(143);
-            Part2(input).Should().Be(6142);
+            Part2(input).Should().Be(123);
         }
 
         void Compute()
@@ -54,20 +54,21 @@
         {
             var (comparer, pages) = Parse(lines);
 
-            return pages.Where(SortedCorrectly).Sum(x => x[x.Length/2]);
-
-            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(comparer));
+            return pages
+                .Where(x => SortedCorrectly(x, comparer))
+                .Sum(x => x[x.Length/2]);
         }
         int Part2(string[] lines)
         {
             var (comparer, pages) = Parse(lines);
 
             return pages
-                .Where(x => !SortedCorrectly(x))
+                .Where(x => !SortedCorrectly(x, comparer))
                 .Sum(x => x.Order(comparer).ElementAt(x.Length/2));
-
-            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(comparer));
         }
+
+        static bool SortedCorrectly(int[] page, ComparePages comparer)
+            => page.SequenceEqual(page.Order(comparer));
 
         static (ComparePages comparer, List<int[]> pages) Parse(string[] lines)
         {
