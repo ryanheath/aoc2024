@@ -47,64 +47,48 @@
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(5391);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(6142);
         }
 
         int Part1(string[] lines)
         {
-            HashSet<(int, int)> rules = [];
-            List<int[]> pages = [];
-            ComparePages compare = new(rules);
-
-            Parse();
+            var (comparer, pages) = Parse(lines);
 
             return pages.Where(SortedCorrectly).Sum(x => x[x.Length/2]);
 
-            void Parse()
-            {
-                var i = 0;
-                for (i = 0; i < lines.Length; i++)
-                {
-                    var line = lines[i];
-                    if (line == "") break;
-                    rules.Add(line.AsSpan().To2Ints("|"));
-                }
-                for (i++; i < lines.Length; i++)
-                {
-                    pages.Add(lines[i].ToInts(","));
-                }
-            }
-
-            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(compare));
+            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(comparer));
         }
         int Part2(string[] lines)
+        {
+            var (comparer, pages) = Parse(lines);
+
+            return pages
+                .Where(x => !SortedCorrectly(x))
+                .Sum(x => x.Order(comparer).ElementAt(x.Length/2));
+
+            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(comparer));
+        }
+
+        static (ComparePages comparer, List<int[]> pages) Parse(string[] lines)
         {
             HashSet<(int, int)> rules = [];
             List<int[]> pages = [];
             ComparePages compare = new(rules);
 
-            Parse();
-
-            return pages
-                .Where(x => !SortedCorrectly(x))
-                .Sum(x => x.Order(compare).ElementAt(x.Length/2));
-
-            void Parse()
+            var i = 0;
+            for (i = 0; i < lines.Length; i++)
             {
-                var i = 0;
-                for (i = 0; i < lines.Length; i++)
-                {
-                    var line = lines[i];
-                    if (line == "") break;
-                    rules.Add(line.AsSpan().To2Ints("|"));
-                }
-                for (i++; i < lines.Length; i++)
-                {
-                    pages.Add(lines[i].ToInts(","));
-                }
+                var line = lines[i];
+                if (line == "") break;
+                rules.Add(line.AsSpan().To2Ints("|"));
             }
 
-            bool SortedCorrectly(int[] page) => page.SequenceEqual(page.Order(compare));
+            for (i++; i < lines.Length; i++)
+            {
+                pages.Add(lines[i].ToInts(","));
+            }
+
+            return (compare, pages);
         }
     }
 
