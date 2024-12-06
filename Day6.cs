@@ -55,7 +55,9 @@ static partial class Aoc2024
             {
                 var (x, y, d) = path[i];
 
-                if (obstructions.Contains((x, y))) continue;
+                var obs = HashCode.Combine(x, y);
+
+                if (obstructions.Contains(obs)) continue;
 
                 var startPath = path[..i];
 
@@ -66,7 +68,7 @@ static partial class Aoc2024
                 if (d != Direction.W && startPath.Contains((x, y, Direction.W))) continue;
 
                 // add a obstruction at this position
-                obstructions.Add((x, y));
+                obstructions.Add(obs);
 
                 if (GetPath(obstructions, path[i-1], dim, startPath) is null)
                 {
@@ -74,13 +76,13 @@ static partial class Aoc2024
                 }
 
                 // remove the obstruction
-                obstructions.Remove((x, y));
+                obstructions.Remove(obs);
             }
 
             return loops;
         }
 
-        static List<(int x, int y, Direction d)>? GetPath(HashSet<(int x, int y)> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, List<(int x, int y, Direction d)> startPath)
+        static List<(int x, int y, Direction d)>? GetPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, List<(int x, int y, Direction d)> startPath)
         {
             var (x, y, d) = guard;
             List<(int x, int y, Direction d)>? path = [];
@@ -96,7 +98,7 @@ static partial class Aoc2024
             {
                 var (nextX, nextY) = NextPosition();
                 if (OutOfBounds(nextX, nextY)) return false;
-                if (obstructions.Contains((nextX, nextY)))
+                if (obstructions.Contains(HashCode.Combine(nextX, nextY)))
                 {
                     Rotate90();
                 }
@@ -127,9 +129,9 @@ static partial class Aoc2024
             }
         }
 
-        static (HashSet<(int x, int y)> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim) Parse(string[] lines)
+        static (HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim) Parse(string[] lines)
         {
-            HashSet<(int x, int y)> obstructions = [];
+            HashSet<int> obstructions = [];
             (int x, int y, Direction d) guard = (0, 0, Direction.N);
 
             for (var y = 0; y < lines.Length; y++)
@@ -137,7 +139,7 @@ static partial class Aoc2024
             {
                 switch (lines[y][x])
                 {
-                    case '#': obstructions.Add((x, y)); break;
+                    case '#': obstructions.Add(HashCode.Combine(x, y)); break;
                     case '^': guard = (x, y, Direction.N); break;
                 }   
             }
