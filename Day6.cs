@@ -45,20 +45,20 @@ static partial class Aoc2024
         {
             var (obstructions, guard, dim) = Parse(lines);
 
-            var path = GetPath(obstructions, guard, dim);
-            var seen = path.Select(p => HashCode.Combine(p.x, p.y, p.d)).ToHashSet();
+            var originalPath = GetPath(obstructions, guard, dim);
+            var path = new Stack<(int x, int y, Direction d)>(originalPath);
+            var seen = originalPath.Select(p => HashCode.Combine(p.x, p.y, p.d)).ToHashSet();
 
             var loops = 0;
 
             // travese the path backwards 
             // so we have an easy bookkeeping of seen positions
             // without copying
-            for (var i = path.Count - 1; i >= 1; i--)
+            while (path.Count > 1)
             {
-                var (x, y, d) = path[i];
-
                 // remove the position from the path
-                path.RemoveAt(i);
+                var (x, y, d) = path.Pop();
+
                 // remove the position from seen
                 seen.Remove(HashCode.Combine(x, y, d));
 
@@ -75,7 +75,7 @@ static partial class Aoc2024
                 // add a obstruction at this position
                 obstructions.Add(obs);
 
-                if (IsLoopPath(obstructions, path[i-1], dim, [..seen]))
+                if (IsLoopPath(obstructions, path.Peek(), dim, [..seen]))
                 {
                     loops++;
                 }
