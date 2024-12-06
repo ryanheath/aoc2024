@@ -38,39 +38,44 @@ static partial class Aoc2024
         {
             var (obstructions, guard, dim) = Parse(lines);
 
-            return GetPath(obstructions, guard, dim, [])!.Select(p => (p.x, p.y)).ToHashSet().Count;
+            return GetPath(obstructions, guard, dim).Select(p => (p.x, p.y)).ToHashSet().Count;
         }
 
         int Part2(string[] lines)
         {
             var (obstructions, guard, dim) = Parse(lines);
 
-            var path = GetPath(obstructions, guard, dim, [])!;
+            var path = GetPath(obstructions, guard, dim);
+            var seen = path.Select(p => HashCode.Combine(p.x, p.y, p.d)).ToHashSet();
 
             var loops = 0;
 
-            // just brute force each position to find a loop
-            // ignore the guard position
-            for (var i = 1; i < path.Count; i++)
+            // travese the path backwards 
+            // so we have an easy bookkeeping of seen positions
+            // without copying
+            for (var i = path.Count - 1; i >= 1; i--)
             {
                 var (x, y, d) = path[i];
+
+                // remove the position from the path
+                path.RemoveAt(i);
+                // remove the position from seen
+                seen.Remove(HashCode.Combine(x, y, d));
 
                 var obs = HashCode.Combine(x, y);
 
                 if (obstructions.Contains(obs)) continue;
 
-                var startPath = path[..i];
-
                 // don't add positions that are already in the path
-                if (d != Direction.N && startPath.Contains((x, y, Direction.N))) continue;
-                if (d != Direction.E && startPath.Contains((x, y, Direction.E))) continue;
-                if (d != Direction.S && startPath.Contains((x, y, Direction.S))) continue;
-                if (d != Direction.W && startPath.Contains((x, y, Direction.W))) continue;
+                if (d != Direction.N && seen.Contains(HashCode.Combine(x, y, Direction.N))) continue;
+                if (d != Direction.E && seen.Contains(HashCode.Combine(x, y, Direction.E))) continue;
+                if (d != Direction.S && seen.Contains(HashCode.Combine(x, y, Direction.S))) continue;
+                if (d != Direction.W && seen.Contains(HashCode.Combine(x, y, Direction.W))) continue;
 
                 // add a obstruction at this position
                 obstructions.Add(obs);
 
-                if (GetPath(obstructions, path[i-1], dim, startPath) is null)
+                if (IsLoopPath(obstructions, path[i-1], dim, [..seen]))
                 {
                     loops++;
                 }
@@ -82,52 +87,72 @@ static partial class Aoc2024
             return loops;
         }
 
-        static List<(int x, int y, Direction d)>? GetPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, List<(int x, int y, Direction d)> startPath)
+        static List<(int x, int y, Direction d)> GetPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim)
         {
             var (x, y, d) = guard;
-            List<(int x, int y, Direction d)>? path = [];
-            HashSet<int> seen = [..startPath.Select(p => HashCode.Combine(p.x, p.y, p.d))];
-            if (startPath is []) path!.Add((x, y, d));
-            seen.Add(HashCode.Combine(x, y, d));
+            List<(int x, int y, Direction d)> path = [];
+            path.Add((x, y, d));
 
-            while (Walk());
-
-            return path;
-
-            bool Walk()
+            while (true)
             {
-                var (nextX, nextY) = NextPosition();
-                if (OutOfBounds(nextX, nextY)) return false;
+                var (nextX, nextY) = NextPosition(x, y, d);
+
+                if (OutOfBounds(nextX, nextY, dim)) break;
+
                 if (obstructions.Contains(HashCode.Combine(nextX, nextY)))
                 {
-                    Rotate90();
+                    d = Rotate90(d);
                 }
                 else
                 {
-                    if (Seen(nextX, nextY, d)) { path = null; return false; };
                     x = nextX;
                     y = nextY;
                 }
-                if (startPath is []) path.Add((x, y, d));
-                seen.Add(HashCode.Combine(x, y, d));
-                return true;
 
-                (int x, int y) NextPosition() => d switch
+                path.Add((x, y, d));
+            }
+
+            return path;
+        }
+
+        static bool IsLoopPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, HashSet<int> seen)
+        {
+            var (x, y, d) = guard;
+            seen.Add(HashCode.Combine(x, y, d));
+
+            while (true)
+            {
+                var (nextX, nextY) = NextPosition(x, y, d);
+
+                if (OutOfBounds(nextX, nextY, dim)) return false;
+
+                if (obstructions.Contains(HashCode.Combine(nextX, nextY)))
                 {
-                    Direction.N => (x, y - 1),
-                    Direction.E => (x + 1, y),
-                    Direction.S => (x, y + 1),
-                    Direction.W => (x - 1, y),
-                    _ => throw new InvalidOperationException()
-                };
+                    d = Rotate90(d);
+                }
+                else
+                {
+                    if (seen.Contains(HashCode.Combine(nextX, nextY, d))) return true;
+                    x = nextX;
+                    y = nextY;
+                }
 
-                bool OutOfBounds(int x, int y) => x < 0 || x >= dim.maxX || y < 0 || y >= dim.maxY;
-
-                void Rotate90() => d = (Direction)(((int)d + 1) % 4);
-
-                bool Seen(int x, int y, Direction d) => seen.Contains(HashCode.Combine(x, y, d));
+                seen.Add(HashCode.Combine(x, y, d));
             }
         }
+
+        static Direction Rotate90(Direction d) => d = (Direction)(((int)d + 1) % 4);
+
+        static bool OutOfBounds(int x, int y, (int maxX, int maxY) dim) => x < 0 || x >= dim.maxX || y < 0 || y >= dim.maxY;
+
+        static (int x, int y) NextPosition(int x, int y, Direction d) => d switch
+        {
+            Direction.N => (x, y - 1),
+            Direction.E => (x + 1, y),
+            Direction.S => (x, y + 1),
+            Direction.W => (x - 1, y),
+            _ => throw new InvalidOperationException()
+        };
 
         static (HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim) Parse(string[] lines)
         {
