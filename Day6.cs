@@ -83,9 +83,9 @@ static partial class Aoc2024
         static List<(int x, int y, Direction d)>? GetPath(HashSet<(int x, int y)> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, List<(int x, int y, Direction d)> startPath)
         {
             var (x, y, d) = guard;
-            List<(int x, int y, Direction d)>? path = [..startPath];
+            List<(int x, int y, Direction d)>? path = [];
             HashSet<(int x, int y, Direction d)> seen = [..startPath];
-            path!.Add((x, y, d));
+            if (startPath is []) path!.Add((x, y, d));
             seen.Add((x, y, d));
 
             while (Walk());
@@ -106,7 +106,7 @@ static partial class Aoc2024
                     x = nextX;
                     y = nextY;
                 }
-                path.Add((x, y, d));
+                if (startPath is []) path.Add((x, y, d));
                 seen.Add((x, y, d));
                 return true;
 
