@@ -84,9 +84,9 @@ static partial class Aoc2024
         {
             var (x, y, d) = guard;
             List<(int x, int y, Direction d)>? path = [];
-            HashSet<(int x, int y, Direction d)> seen = [..startPath];
+            HashSet<int> seen = [..startPath.Select(p => HashCode.Combine(p.x, p.y, p.d))];
             if (startPath is []) path!.Add((x, y, d));
-            seen.Add((x, y, d));
+            seen.Add(HashCode.Combine(x, y, d));
 
             while (Walk());
 
@@ -107,7 +107,7 @@ static partial class Aoc2024
                     y = nextY;
                 }
                 if (startPath is []) path.Add((x, y, d));
-                seen.Add((x, y, d));
+                seen.Add(HashCode.Combine(x, y, d));
                 return true;
 
                 (int x, int y) NextPosition() => d switch
@@ -123,7 +123,7 @@ static partial class Aoc2024
 
                 void Rotate90() => d = (Direction)(((int)d + 1) % 4);
 
-                bool Seen(int x, int y, Direction d) => seen.Contains((x, y, d));
+                bool Seen(int x, int y, Direction d) => seen.Contains(HashCode.Combine(x, y, d));
             }
         }
 
