@@ -38,27 +38,37 @@ static partial class Aoc2024
         {
             var (obstructions, guard, dim) = Parse(lines);
 
-            return GetVisited(obstructions, guard, dim)!.Count;
+            return GetPath(obstructions, guard, dim, [])!.Select(p => (p.x, p.y)).ToHashSet().Count;
         }
 
         int Part2(string[] lines)
         {
             var (obstructions, guard, dim) = Parse(lines);
 
-            var path = GetVisited(obstructions, guard, dim)!;
+            var path = GetPath(obstructions, guard, dim, [])!;
 
             var loops = 0;
 
             // just brute force each position to find a loop
-            foreach (var (x, y) in path)
+            // ignore the guard position
+            for (var i = 1; i < path.Count; i++)
             {
+                var (x, y, d) = path[i];
+
                 if (obstructions.Contains((x, y))) continue;
-                if (guard.x == x && guard.y == y) continue;
+
+                var startPath = path[..i];
+
+                // don't add positions that are already in the path
+                if (d != Direction.N && startPath.Contains((x, y, Direction.N))) continue;
+                if (d != Direction.E && startPath.Contains((x, y, Direction.E))) continue;
+                if (d != Direction.S && startPath.Contains((x, y, Direction.S))) continue;
+                if (d != Direction.W && startPath.Contains((x, y, Direction.W))) continue;
 
                 // add a obstruction at this position
                 obstructions.Add((x, y));
 
-                if (GetVisited(obstructions, guard, dim) is null)
+                if (GetPath(obstructions, path[i-1], dim, startPath) is null)
                 {
                     loops++;
                 }
@@ -70,16 +80,17 @@ static partial class Aoc2024
             return loops;
         }
 
-        static HashSet<(int x, int y)>? GetVisited(HashSet<(int x, int y)> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim)
+        static List<(int x, int y, Direction d)>? GetPath(HashSet<(int x, int y)> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, List<(int x, int y, Direction d)> startPath)
         {
             var (x, y, d) = guard;
-            HashSet<(int x, int y, Direction d)>? visited = [];
-            visited.Add((x, y, d));
+            List<(int x, int y, Direction d)>? path = [..startPath];
+            HashSet<(int x, int y, Direction d)> seen = [..startPath];
+            path!.Add((x, y, d));
+            seen.Add((x, y, d));
 
             while (Walk());
 
-            // strip the direction from the visited positions
-            return visited?.Select(v => (v.x, v.y)).ToHashSet();
+            return path;
 
             bool Walk()
             {
@@ -91,11 +102,12 @@ static partial class Aoc2024
                 }
                 else
                 {
-                    if (Seen(nextX, nextY, d)) { visited = null; return false; };
+                    if (Seen(nextX, nextY, d)) { path = null; return false; };
                     x = nextX;
                     y = nextY;
                 }
-                visited.Add((x, y, d));
+                path.Add((x, y, d));
+                seen.Add((x, y, d));
                 return true;
 
                 (int x, int y) NextPosition() => d switch
@@ -111,7 +123,7 @@ static partial class Aoc2024
 
                 void Rotate90() => d = (Direction)(((int)d + 1) % 4);
 
-                bool Seen(int x, int y, Direction d) => visited.Contains((x, y, d));
+                bool Seen(int x, int y, Direction d) => seen.Contains((x, y, d));
             }
         }
 
