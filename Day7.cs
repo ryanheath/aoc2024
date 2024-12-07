@@ -31,16 +31,19 @@
             Part2(input).Should().Be(38322057216320);
         }
 
-        long Part1(string[] lines) => TestLines(lines, IsValidWithoutConcat);
-        long Part2(string[] lines) => TestLines(lines, IsValidWithConcat);
+        long Part1(string[] lines) => TestLines(lines, Multiply, Add);
+        long Part2(string[] lines) => TestLines(lines, Multiply, Add, Concat);
 
-        static long TestLines(string[] lines, Func<(long testValue, long[] values), bool> isValid)
-            => Parse(lines).Where(isValid).Sum(x => x.testValue);
+        static long TestLines(string[] lines, params Func<long, long, long>[] operations)
+            => Parse(lines)
+            .Where(x => IsValid((x.testValue, x.values), operations))
+            .Sum(x => x.testValue);
 
-        static bool IsValidWithoutConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values), false);
-        static bool IsValidWithConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values), true);
+        static long Multiply(long a, long b) => a * b;
+        static long Add(long a, long b) => a + b;
+        static long Concat(long a, long b) => a * (long)Math.Pow(10, Math.Floor(Math.Log10(b) + 1)) + b;
 
-        static bool IsValid((long testValue, long[] values) line, bool useConcat)
+        static bool IsValid((long testValue, long[] values) line, params ReadOnlySpan<Func<long, long, long>> operations)
         {
             var resultValues = new Stack<(long result, int nextIndex)>();
             var lastIndex = line.values.Length - 1;
@@ -52,12 +55,12 @@
                 var (result, nextIndex) = resultValues.Pop();
                 var nextValue = line.values[nextIndex];
 
-                if (
-                    TestOperation(Multiply(result, nextValue))
-                    || TestOperation(Add(result, nextValue))
-                    || useConcat && TestOperation(Concat(result, nextValue)))
+                foreach (var operation in operations)
                 {
-                    return true;
+                    if (TestOperation(operation(result, nextValue)))
+                    {
+                        return true;
+                    }
                 }
 
                 bool TestOperation(long nextResult)
@@ -75,10 +78,6 @@
             }
 
             return false;
-
-            static long Multiply(long a, long b) => a * b;
-            static long Add(long a, long b) => a + b;
-            static long Concat(long a, long b) => a * (long)Math.Pow(10, Math.Floor(Math.Log10(b) + 1)) + b;
         }
 
         static List<(long testValue, long[] values)> Parse(string[] lines)
