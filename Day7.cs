@@ -31,18 +31,16 @@
             Part2(input).Should().Be(38322057216320);
         }
 
-        long Part1(string[] lines) => TestLines(lines, withConcat: false);
-        long Part2(string[] lines) => TestLines(lines, withConcat: true);
+        long Part1(string[] lines) => TestLines(lines, IsValidWithoutConcat);
+        long Part2(string[] lines) => TestLines(lines, IsValidWithConcat);
 
-        static long TestLines(string[] lines, bool withConcat)
-            => Parse(lines)
-                .Where(withConcat ? IsValidWithConcat : IsValidWithoutConcat)
-                .Sum(x => x.testValue);
+        static long TestLines(string[] lines, Func<(long testValue, long[] values), bool> isValid)
+            => Parse(lines).Where(isValid).Sum(x => x.testValue);
 
-        static bool IsValidWithoutConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values, false));
-        static bool IsValidWithConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values, true));
+        static bool IsValidWithoutConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values), false);
+        static bool IsValidWithConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values), true);
 
-        static bool IsValid((long testValue, long[] values, bool useConcat) line)
+        static bool IsValid((long testValue, long[] values) line, bool useConcat)
         {
             var resultValues = new Stack<(long result, int nextIndex)>();
             var lastIndex = line.values.Length - 1;
@@ -52,45 +50,34 @@
             while (resultValues.Count > 0)
             {
                 var (result, nextIndex) = resultValues.Pop();
+                var nextValue = line.values[nextIndex];
 
-                var nextResult = result * line.values[nextIndex];
-                if (nextIndex == lastIndex && nextResult == line.testValue)
+                if (
+                    TestOperation(Multiply(result, nextValue))
+                    || TestOperation(Add(result, nextValue))
+                    || useConcat && TestOperation(Concat(result, nextValue)))
                 {
                     return true;
                 }
-                else if (nextResult <= line.testValue && nextIndex < lastIndex)
-                {
-                    resultValues.Push((nextResult, nextIndex + 1));
-                }
 
-                nextResult = result + line.values[nextIndex];
-                if (nextIndex == lastIndex && nextResult == line.testValue)
+                bool TestOperation(long nextResult)
                 {
-                    return true;
-                }
-                else if (nextResult <= line.testValue && nextIndex < lastIndex)
-                {
-                    resultValues.Push((nextResult, nextIndex + 1));
-                }
-
-                if (!line.useConcat)
-                {
-                    continue;
-                }
-
-                nextResult = Concat(result, line.values[nextIndex]);
-                if (nextIndex == lastIndex && nextResult == line.testValue)
-                {
-                    return true;
-                }
-                else if (nextResult <= line.testValue && nextIndex < lastIndex)
-                {
-                    resultValues.Push((nextResult, nextIndex + 1));
+                    if (nextIndex == lastIndex && nextResult == line.testValue)
+                    {
+                        return true;
+                    }
+                    else if (nextResult <= line.testValue && nextIndex < lastIndex)
+                    {
+                        resultValues.Push((nextResult, nextIndex + 1));
+                    }
+                    return false;
                 }
             }
 
             return false;
 
+            static long Multiply(long a, long b) => a * b;
+            static long Add(long a, long b) => a + b;
             static long Concat(long a, long b) => $"{a}{b}".ToLong();
         }
 
