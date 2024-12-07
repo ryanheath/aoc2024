@@ -47,7 +47,8 @@ static partial class Aoc2024
 
             var originalPath = GetPath(obstructions, guard, dim);
             var path = new Stack<(int x, int y, Direction d)>(originalPath);
-            var seen = originalPath.Select(p => HashCode.Combine(p.x, p.y, p.d)).ToHashSet();
+            var seen = new BoolDimArray(dim.maxX, dim.maxY);
+            foreach (var p in originalPath) seen[p.x, p.y, p.d] = true;
 
             var loops = 0;
 
@@ -60,34 +61,34 @@ static partial class Aoc2024
                 var (x, y, d) = path.Pop();
 
                 // remove the position from seen
-                seen.Remove(HashCode.Combine(x, y, d));
+                seen[x, y, d] = false;
 
                 var obs = HashCode.Combine(x, y);
 
-                if (obstructions.Contains(obs)) continue;
+                if (obstructions[x, y]) continue;
 
                 // don't add positions that are already in the path
-                if (d != Direction.N && seen.Contains(HashCode.Combine(x, y, Direction.N))) continue;
-                if (d != Direction.E && seen.Contains(HashCode.Combine(x, y, Direction.E))) continue;
-                if (d != Direction.S && seen.Contains(HashCode.Combine(x, y, Direction.S))) continue;
-                if (d != Direction.W && seen.Contains(HashCode.Combine(x, y, Direction.W))) continue;
+                if (d != Direction.N && seen[x, y, Direction.N]) continue;
+                if (d != Direction.E && seen[x, y, Direction.E]) continue;
+                if (d != Direction.S && seen[x, y, Direction.S]) continue;
+                if (d != Direction.W && seen[x, y, Direction.W]) continue;
 
                 // add a obstruction at this position
-                obstructions.Add(obs);
+                obstructions[x, y] = true;
 
-                if (IsLoopPath(obstructions, path.Peek(), dim, [..seen]))
+                if (IsLoopPath(obstructions, path.Peek(), dim, new BoolDimArray(seen)))
                 {
                     loops++;
                 }
 
                 // remove the obstruction
-                obstructions.Remove(obs);
+                obstructions[x, y] = false;
             }
 
             return loops;
         }
 
-        static List<(int x, int y, Direction d)> GetPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim)
+        static List<(int x, int y, Direction d)> GetPath(BoolArray obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim)
         {
             var (x, y, d) = guard;
             List<(int x, int y, Direction d)> path = [];
@@ -99,7 +100,7 @@ static partial class Aoc2024
 
                 if (OutOfBounds(nextX, nextY, dim)) break;
 
-                if (obstructions.Contains(HashCode.Combine(nextX, nextY)))
+                if (obstructions[nextX, nextY])
                 {
                     d = Rotate90(d);
                 }
@@ -115,10 +116,10 @@ static partial class Aoc2024
             return path;
         }
 
-        static bool IsLoopPath(HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, HashSet<int> seen)
+        static bool IsLoopPath(BoolArray obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim, BoolDimArray seen)
         {
             var (x, y, d) = guard;
-            seen.Add(HashCode.Combine(x, y, d));
+            seen[x, y, d] = true;
 
             while (true)
             {
@@ -126,18 +127,18 @@ static partial class Aoc2024
 
                 if (OutOfBounds(nextX, nextY, dim)) return false;
 
-                if (obstructions.Contains(HashCode.Combine(nextX, nextY)))
+                if (obstructions[nextX, nextY])
                 {
                     d = Rotate90(d);
                 }
                 else
                 {
-                    if (seen.Contains(HashCode.Combine(nextX, nextY, d))) return true;
+                    if (seen[nextX, nextY, d]) return true;
                     x = nextX;
                     y = nextY;
                 }
 
-                seen.Add(HashCode.Combine(x, y, d));
+                seen[x, y, d] = true;
             }
         }
 
@@ -154,9 +155,9 @@ static partial class Aoc2024
             _ => throw new InvalidOperationException()
         };
 
-        static (HashSet<int> obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim) Parse(string[] lines)
+        static (BoolArray obstructions, (int x, int y, Direction d) guard, (int maxX, int maxY) dim) Parse(string[] lines)
         {
-            HashSet<int> obstructions = [];
+            var obstructions = new BoolArray(lines[0].Length, lines.Length);
             (int x, int y, Direction d) guard = (0, 0, Direction.N);
 
             for (var y = 0; y < lines.Length; y++)
@@ -164,7 +165,7 @@ static partial class Aoc2024
             {
                 switch (lines[y][x])
                 {
-                    case '#': obstructions.Add(HashCode.Combine(x, y)); break;
+                    case '#': obstructions[x, y] = true; break;
                     case '^': guard = (x, y, Direction.N); break;
                 }   
             }
@@ -174,4 +175,33 @@ static partial class Aoc2024
     }
 
     enum Direction { N, E, S, W }
+
+    class BoolArray(int maxX, int maxY)
+    {
+        private readonly byte[] array = new byte[maxX * maxY];
+
+        public bool this[int x, int y]
+        {
+            get => array[y + x * maxY] == 1;
+            set => array[y + x * maxY] = (byte)(value ? 1 : 0);
+        }
+    }
+
+    class BoolDimArray(int maxX, int maxY)
+    {
+        private readonly int maxX = maxX;
+        private readonly int maxY = maxY;
+        private readonly byte[] array = new byte[maxX * maxY * 4];
+
+        public bool this[int x, int y, Direction d]
+        {
+            get => array[y * 4 + x * maxY * 4 + (int)d] == 1;
+            set => array[y * 4 + x * maxY * 4 + (int)d] = (byte)(value ? 1 : 0);
+        }
+
+        public BoolDimArray(BoolDimArray source) : this(source.maxX, source.maxY)
+        {
+            Array.Copy(source.array, array, array.Length);
+        }
+    }
 }
