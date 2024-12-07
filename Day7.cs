@@ -41,14 +41,14 @@
 
         static long Multiply(long a, long b) => a * b;
         static long Add(long a, long b) => a + b;
-        static long Concat(long a, long b) => a * PowLog(b) + b;
-        static long PowLog(long b)
+        static long Concat(long a, long b) => a * PowLogApprox(b) + b;
+        static long PowLogApprox(long b) => b switch
         {
-            if (b < 10) return 10;
-            if (b < 100) return 100;
-            if (b < 1000) return 1000;
-            return 10000;
-        }
+            < 10 => 10,
+            < 100 => 100,
+            < 1000 => 1000,
+            _ => 10000
+        };
 
         static bool IsValid((long testValue, long[] values) line, params ReadOnlySpan<Func<long, long, long>> operations)
         {
@@ -64,14 +64,8 @@
 
                 foreach (var operation in operations)
                 {
-                    if (TestOperation(operation(result, nextValue)))
-                    {
-                        return true;
-                    }
-                }
+                    var nextResult = operation(result, nextValue);
 
-                bool TestOperation(long nextResult)
-                {
                     if (nextIndex == lastIndex && nextResult == line.testValue)
                     {
                         return true;
@@ -80,7 +74,6 @@
                     {
                         resultValues.Push((nextResult, nextIndex + 1));
                     }
-                    return false;
                 }
             }
 
