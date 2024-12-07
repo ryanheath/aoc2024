@@ -41,7 +41,14 @@
 
         static long Multiply(long a, long b) => a * b;
         static long Add(long a, long b) => a + b;
-        static long Concat(long a, long b) => a * (long)Math.Pow(10, Math.Floor(Math.Log10(b) + 1)) + b;
+        static long Concat(long a, long b) => a * PowLog(b) + b;
+        static long PowLog(long b)
+        {
+            if (b < 10) return 10;
+            if (b < 100) return 100;
+            if (b < 1000) return 1000;
+            return 10000;
+        }
 
         static bool IsValid((long testValue, long[] values) line, params ReadOnlySpan<Func<long, long, long>> operations)
         {
