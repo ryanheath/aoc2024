@@ -8,7 +8,7 @@
 
         void ComputeExample()
         {
-            var input = 
+            var input =
                 """
                 190: 10 19
                 3267: 81 40 27
@@ -21,22 +21,30 @@
                 292: 11 6 16 20
                 """.ToLines();
             Part1(input).Should().Be(3749);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(11387);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(4364915411363);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(38322057216320);
         }
 
-        long Part1(string[] lines) => Parse(lines).Where(IsValid).Sum(x => x.testValue);
-        int Part2(string[] lines) => 0;
+        long Part1(string[] lines) => TestLines(lines, withConcat: false);
+        long Part2(string[] lines) => TestLines(lines, withConcat: true);
 
-        static bool IsValid((long testValue, long[] values) line)
+        static long TestLines(string[] lines, bool withConcat)
+            => Parse(lines)
+                .Where(withConcat ? IsValidWithConcat : IsValidWithoutConcat)
+                .Sum(x => x.testValue);
+
+        static bool IsValidWithoutConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values, false));
+        static bool IsValidWithConcat((long testValue, long[] values) line) => IsValid((line.testValue, line.values, true));
+
+        static bool IsValid((long testValue, long[] values, bool useConcat) line)
         {
-            var resultValues = new Stack<(long result, long nextIndex)>();
+            var resultValues = new Stack<(long result, int nextIndex)>();
             var lastIndex = line.values.Length - 1;
 
             resultValues.Push((line.values[0], 1));
@@ -64,10 +72,27 @@
                 {
                     resultValues.Push((nextResult, nextIndex + 1));
                 }
+
+                if (!line.useConcat)
+                {
+                    continue;
+                }
+
+                nextResult = Concat(result, line.values[nextIndex]);
+                if (nextIndex == lastIndex && nextResult == line.testValue)
+                {
+                    return true;
+                }
+                else if (nextResult <= line.testValue && nextIndex < lastIndex)
+                {
+                    resultValues.Push((nextResult, nextIndex + 1));
+                }
             }
 
             return false;
-        } 
+
+            static long Concat(long a, long b) => $"{a}{b}".ToLong();
+        }
 
         static List<(long testValue, long[] values)> Parse(string[] lines)
         {
@@ -78,6 +103,6 @@
                 result.Add((parts[0].ToLong(), parts[1].ToLongs(" ")));
             }
             return result;
-        }   
+        }
     }
 }
