@@ -78,7 +78,7 @@
 
             static long Multiply(long a, long b) => a * b;
             static long Add(long a, long b) => a + b;
-            static long Concat(long a, long b) => $"{a}{b}".ToLong();
+            static long Concat(long a, long b) => a * (long)Math.Pow(10, Math.Floor(Math.Log10(b) + 1)) + b;
         }
 
         static List<(long testValue, long[] values)> Parse(string[] lines)
