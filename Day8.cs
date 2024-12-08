@@ -42,7 +42,7 @@
             var (antennas, dim) = Parse(lines);
 
             // group the antennas
-            var groupedAntennas = antennas.GroupBy(a => a.antenna).Select(g => g.ToArray()).ToArray();
+            var groupedAntennas = antennas.GroupBy(a => a.antenna, (_, g) => g.ToArray()).ToArray();
 
             HashSet<(int x, int y)> antidiotes = [];
 
