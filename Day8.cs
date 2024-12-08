@@ -34,17 +34,17 @@
             Part2(input).Should().Be(991);
         }
 
-        int Part1(string[] lines) => CountAntidiotes(lines, addAll: false);
-        int Part2(string[] lines) => CountAntidiotes(lines, addAll: true);
+        int Part1(string[] lines) => CountAntinodes(lines, addAll: false);
+        int Part2(string[] lines) => CountAntinodes(lines, addAll: true);
 
-        static int CountAntidiotes(string[] lines, bool addAll)
+        static int CountAntinodes(string[] lines, bool addAll)
         {
             var (antennas, dim) = Parse(lines);
 
             // group the antennas
             var groupedAntennas = antennas.GroupBy(a => a.antenna, (_, g) => g.ToArray()).ToArray();
 
-            HashSet<(int x, int y)> antidiotes = [];
+            HashSet<(int x, int y)> antinodes = [];
 
             foreach (var positions in groupedAntennas)
             foreach (var (i, pos1) in positions.Index())
@@ -53,24 +53,24 @@
                 var dx = pos2.x - pos1.x;
                 var dy = pos2.y - pos1.y;
 
-                AddAntidiotes(pos1.x, pos1.y, -dx, -dy);
-                AddAntidiotes(pos2.x, pos2.y, +dx, +dy);
+                AddAntinodes(pos1.x, pos1.y, -dx, -dy);
+                AddAntinodes(pos2.x, pos2.y, +dx, +dy);
 
-                void AddAntidiotes(int x, int y, int dx, int dy)
+                void AddAntinodes(int x, int y, int dx, int dy)
                 {
-                    if (addAll) antidiotes.Add((x, y));
+                    if (addAll) antinodes.Add((x, y));
                     while (true)
                     {
                         x += dx;
                         y += dy;
                         if (x < 0 || x >= dim.maxX || y < 0 || y >= dim.maxY) break;
-                        antidiotes.Add((x, y));
+                        antinodes.Add((x, y));
                         if (!addAll) break;
                     }
                 }
             }
 
-            return antidiotes.Count;
+            return antinodes.Count;
         }
 
         static (List<(char antenna, int x, int y)>, (int maxX, int maxY) dim) Parse(string[] lines)
