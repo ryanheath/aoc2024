@@ -58,18 +58,14 @@
 
                 void AddAntidiotes(int x, int y, int dx, int dy)
                 {
-                    if (addAll)
-                    {
-                        antidiotes.Add((x, y));
-                        for (x += dx, y += dy; x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY; x += dx, y += dy)
-                            antidiotes.Add((x, y));
-                    }
-                    else
+                    if (addAll) antidiotes.Add((x, y));
+                    while (true)
                     {
                         x += dx;
                         y += dy;
-                        if (x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY)
-                            antidiotes.Add((x, y));
+                        if (x < 0 || x >= dim.maxX || y < 0 || y >= dim.maxY) break;
+                        antidiotes.Add((x, y));
+                        if (!addAll) break;
                     }
                 }
             }
