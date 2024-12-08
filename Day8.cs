@@ -34,37 +34,10 @@
             Part2(input).Should().Be(991);
         }
 
-        int Part1(string[] lines)
-        {
-            var (antennas, dim) = Parse(lines);
+        int Part1(string[] lines) => CountAntidiotes(lines, addAll: false);
+        int Part2(string[] lines) => CountAntidiotes(lines, addAll: true);
 
-            // group the antennas
-            var groupedAntennas = antennas.GroupBy(a => a.antenna).Select(g => g.ToArray()).ToArray();
-
-            HashSet<(int x, int y)> antidiotes = [];
-
-            foreach (var positions in groupedAntennas)
-            foreach (var (i, pos1) in positions.Index())
-            foreach (var pos2 in positions.Skip(i + 1))
-            {
-                var dx = pos2.x - pos1.x;
-                var dy = pos2.y - pos1.y;
-
-                AddAntidiote(pos1.x - dx, pos1.y - dy);
-                AddAntidiote(pos2.x + dx, pos2.y + dy);
-
-                void AddAntidiote(int x, int y)
-                {
-                    if (x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY)
-                    {
-                        antidiotes.Add((x, y));
-                    }
-                }
-            }
-
-            return antidiotes.Count;
-        }
-        int Part2(string[] lines)
+        static int CountAntidiotes(string[] lines, bool addAll)
         {
             var (antennas, dim) = Parse(lines);
 
@@ -85,10 +58,18 @@
 
                 void AddAntidiotes(int x, int y, int dx, int dy)
                 {
-                    antidiotes.Add((x, y));
-                    for (x += dx, y += dy; x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY; x += dx, y += dy)
+                    if (addAll)
                     {
                         antidiotes.Add((x, y));
+                        for (x += dx, y += dy; x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY; x += dx, y += dy)
+                            antidiotes.Add((x, y));
+                    }
+                    else
+                    {
+                        x += dx;
+                        y += dy;
+                        if (x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY)
+                            antidiotes.Add((x, y));
                     }
                 }
             }
