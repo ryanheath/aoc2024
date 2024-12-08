@@ -24,14 +24,14 @@
                 ............
                 """.ToLines();
             Part1(input).Should().Be(14);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(34);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(276);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(991);
         }
 
         int Part1(string[] lines)
@@ -55,7 +55,7 @@
 
                 void AddAntidiote(int x, int y)
                 {
-                    if (x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY) 
+                    if (x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY)
                     {
                         antidiotes.Add((x, y));
                     }
@@ -64,9 +64,39 @@
 
             return antidiotes.Count;
         }
-        int Part2(string[] lines) => 0;
+        int Part2(string[] lines)
+        {
+            var (antennas, dim) = Parse(lines);
 
-        (List<(char antenna, int x, int y)>, (int maxX, int maxY) dim) Parse(string[] lines)
+            // group the antennas
+            var groupedAntennas = antennas.GroupBy(a => a.antenna).Select(g => g.ToArray()).ToArray();
+
+            HashSet<(int x, int y)> antidiotes = [];
+
+            foreach (var positions in groupedAntennas)
+            foreach (var (i, pos1) in positions.Index())
+            foreach (var pos2 in positions.Skip(i + 1))
+            {
+                var dx = pos2.x - pos1.x;
+                var dy = pos2.y - pos1.y;
+
+                AddAntidiotes(pos1.x, pos1.y, -dx, -dy);
+                AddAntidiotes(pos2.x, pos2.y, +dx, +dy);
+
+                void AddAntidiotes(int x, int y, int dx, int dy)
+                {
+                    antidiotes.Add((x, y));
+                    for (x += dx, y += dy; x >= 0 && x < dim.maxX && y >= 0 && y < dim.maxY; x += dx, y += dy)
+                    {
+                        antidiotes.Add((x, y));
+                    }
+                }
+            }
+
+            return antidiotes.Count;
+        }
+
+        static (List<(char antenna, int x, int y)>, (int maxX, int maxY) dim) Parse(string[] lines)
         {
             var antennas = new List<(char antenna, int x, int y)>();
 
