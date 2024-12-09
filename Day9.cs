@@ -12,18 +12,18 @@ static partial class Aoc2024
         {
             var input = "2333133121414131402";
             Part1(input).Should().Be(1928);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(2858);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt")[0];
             Part1(input).Should().Be(6384282079460);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(6408966547049);
         }
 
         long Part1(string line) => Checksum(Compact(Parse(line)));
-        int Part2(string line) => 0;
+        long Part2(string line) => Checksum(Defrag(Parse(line)));
 
         static long Checksum(LinkedList<(int id, int space)> diskmap)
         {
@@ -117,6 +117,82 @@ static partial class Aoc2024
                 }
                 
                 return node;
+            }
+            static bool IsLastFile(LinkedListNode<(int id, int space)>? node)
+            {
+                node = node?.Previous;
+                while (node != null && node.Value.id != -1)
+                {
+                    node = node.Previous;
+                }
+                
+                return node == null;
+            }
+        }
+
+        static LinkedList<(int id, int space)> Defrag(LinkedList<(int id, int space)> diskmap)
+        {
+            var file = diskmap.Last!;
+
+            while (file is not null)
+            {
+                var emptySpace = NextSpace(file);
+                var nextFile = NextFile(file);
+
+                if (emptySpace is not null)
+                {
+                    // add empty space at file
+                    diskmap.AddBefore(file, (id: -1, file.Value.space));
+                    diskmap.Remove(file);
+                    diskmap.AddBefore(emptySpace, file);
+
+                    if (emptySpace.Value.space > file.Value.space)
+                    {
+                        // update empty space
+                        emptySpace.Value = (-1, emptySpace.Value.space - file.Value.space);
+                    }
+                    else
+                    {
+                        // remove empty space
+                        diskmap.Remove(emptySpace);
+                    }
+                }
+
+                // next file
+                file = nextFile;
+
+                if (IsLastFile(file))
+                {
+                    break;
+                }
+            }
+
+            return diskmap;
+
+            static LinkedListNode<(int id, int space)>? NextFile(LinkedListNode<(int id, int space)>? node)
+            {
+                node = node?.Previous;
+                while (node != null && node.Value.id == -1)
+                {
+                    node = node.Previous;
+                }
+                return node;
+            }
+            LinkedListNode<(int id, int space)>? NextSpace(LinkedListNode<(int id, int space)>? file)
+            {
+                var node = diskmap.First;
+                while (true)
+                {
+                    if (node == null || node == file)
+                    {
+                        return null;
+                    }
+                    else if (node.Value.id == -1 && node.Value.space >= file?.Value.space)
+                    {
+                        return node;
+                    }
+                    node = node.Next;
+                }
             }
             static bool IsLastFile(LinkedListNode<(int id, int space)>? node)
             {
