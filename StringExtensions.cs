@@ -62,6 +62,7 @@ static class StringExtensions
     static public string Sort(this string input) => string.Concat(input.OrderBy(c => c));
 
     static public int ToInt(this string input) => int.Parse(input);
+    static public int ToInt(this char input) => input - '0';
     static public int ToIntFromHex(this string input) => int.Parse(input, System.Globalization.NumberStyles.HexNumber);
     static public int? ToNullableInt(this string input) => string.IsNullOrEmpty(input) ? null : int.Parse(input);
 

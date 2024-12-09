@@ -14,4 +14,7 @@ static class MathExtensions
     public static T Lcm<T>(this IEnumerable<T> numbers) where T : INumber<T>  => numbers.Aggregate(Lcm);
 
     public static int PositiveMod(int a, int b) => (a % b + b) % b;
+
+    public static long SumOfN(long n) => n * (n + 1) / 2;
+    public static long SumOfN(long start, long end) => SumOfN(end) - SumOfN(start - 1);
 }
