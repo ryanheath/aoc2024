@@ -20,17 +20,20 @@
                 10456732
                 """.ToLines();
             Part1(input).Should().Be(36);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(81);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
-            Part1(input).Should().Be(0);
-            Part2(input).Should().Be(0);
+            Part1(input).Should().Be(646);
+            Part2(input).Should().Be(1494);
         }
 
-        int Part1(string[] lines)
+        int Part1(string[] lines) => GetScore(lines, uniqueTrails: true);
+        int Part2(string[] lines) => GetScore(lines, uniqueTrails: false);
+
+        static int GetScore(string[] lines, bool uniqueTrails)
         {
             var (map, startingPositions) = Parse(lines);
 
@@ -38,7 +41,7 @@
             foreach (var (x, y) in startingPositions)
                 trailheads.Enqueue((x, y, x, y));
 
-            var trails = new HashSet<(int sx, int sy, int ex, int ey)>();
+            var trails = new List<(int sx, int sy, int ex, int ey)>();
 
             while (trailheads.Count > 0)
             {
@@ -72,14 +75,10 @@
                 }
             }
 
-            var score = trails.Count;
-
-            return score;
+            return uniqueTrails ? trails.Distinct().Count() :  trails.Count;
         }
 
-        int Part2(string[] lines) => 0;
-
-        (int[][] map, List<(int x, int y)> trailheads) Parse(string[] lines)
+        static (int[][] map, List<(int x, int y)> trailheads) Parse(string[] lines)
         {
             var trailheads = new List<(int x, int y)>();
             var map = new int[lines.Length][];
