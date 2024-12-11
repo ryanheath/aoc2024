@@ -8,57 +8,77 @@
 
         void ComputeExample()
         {
-            var input = 
+            var input =
                 """
                 125 17
                 """.ToLines();
             Part1(input).Should().Be(55312);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(65601038650482);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(197357);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(234568186890978);
         }
 
-        int Part1(string[] lines) => Blinks(Parse(lines), 25).Count;
-        int Part2(string[] lines) => 0;
+        long Part1(string[] lines) => Blinks(Parse(lines), 25);
+        long Part2(string[] lines) => Blinks(Parse(lines), 75);
 
-        static LinkedList<long> Blinks(LinkedList<long> stones, int blinks)
+        static long Blinks(long[] stones, int blinks)
         {
+            var seededStones = new Queue<(long id, long count)>(stones.Select(x => (x, 1L)));
+            var seen = new Dictionary<long, long>();
+
             for (var i = 0; i < blinks; i++)
             {
-                Blink();
+                Blink(seededStones, seen);
             }
 
-            return stones;
+            return seededStones.ToArray().Sum(x => x.count);
 
-            void Blink()
+            static void Blink(Queue<(long id, long count)> seededStones, Dictionary<long, long> seen)
             {
-                var stone = stones.First!;
-                while (stone != null)
+                while (seededStones.Count > 0)
                 {
-                    if (stone.Value == 0)
+                    var stone = seededStones.Dequeue();
+
+                    if (stone.id == 0)
                     {
-                        stone.Value = 1;
+                        Add(seen, 1, stone.count);
                     }
                     else
                     {
-                        var (splitted, left, right) = Split(stone.Value);
+                        var (splitted, left, right) = Split(stone.id);
                         if (splitted)
                         {
-                            stones.AddBefore(stone, left);
-                            stone.Value = right;
+                            Add(seen, left, stone.count);
+                            Add(seen, right, stone.count);
                         }
                         else
                         {
-                            stone.Value *= 2024;
+                            Add(seen, stone.id * 2024, stone.count);
                         }
                     }
+                }
 
-                    stone = stone.Next;
+                foreach (var (id, count) in seen)
+                {
+                    seededStones.Enqueue((id, count));
+                }
+                seen.Clear();
+
+                static void Add(Dictionary<long, long> seen, long id, long count)
+                {
+                    if (seen.TryGetValue(id, out var c))
+                    {
+                        seen[id] = c + count;
+                    }
+                    else
+                    {
+                        seen[id] = count;
+                    }
                 }
             }
 
@@ -75,6 +95,6 @@
             }
         }
 
-        static LinkedList<long> Parse(string[] lines) => new(lines[0].ToLongs(" "));
+        static long[] Parse(string[] lines) => lines[0].ToLongs(" ");
     }
 }
