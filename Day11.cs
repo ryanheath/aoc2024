@@ -28,50 +28,38 @@
 
         static long Blinks(long[] stones, int blinks)
         {
-            var seededStones = new Queue<(long id, long count)>(stones.Select(x => (x, 1L)));
-            var seen = new Dictionary<long, long>();
+            var seededStones = stones.ToDictionary(x => x, x => 1L);
 
             for (var i = 0; i < blinks; i++)
             {
-                Blink(seededStones, seen);
+                Blink(seededStones);
             }
 
-            return seededStones.ToArray().Sum(x => x.count);
+            return seededStones.Sum(x => x.Value);
 
-            static void Blink(Queue<(long id, long count)> seededStones, Dictionary<long, long> seen)
+            static void Blink(Dictionary<long, long> seededStones)
             {
-                while (seededStones.Count > 0)
+                var stones = seededStones.ToArray();
+                seededStones.Clear();
+                foreach (var (id, count) in stones)
                 {
-                    var stone = seededStones.Dequeue();
-
-                    if (stone.id == 0)
+                    if (id == 0)
                     {
-                        Add(seen, 1, stone.count);
+                        CollectionsMarshal.GetValueRefOrAddDefault(seededStones, 1, out bool _) += count;
                     }
                     else
                     {
-                        var (splitted, left, right) = Split(stone.id);
+                        var (splitted, left, right) = Split(id);
                         if (splitted)
                         {
-                            Add(seen, left, stone.count);
-                            Add(seen, right, stone.count);
+                            CollectionsMarshal.GetValueRefOrAddDefault(seededStones, left, out bool _) += count;
+                            CollectionsMarshal.GetValueRefOrAddDefault(seededStones, right, out bool _) += count;
                         }
                         else
                         {
-                            Add(seen, stone.id * 2024, stone.count);
+                            CollectionsMarshal.GetValueRefOrAddDefault(seededStones, id * 2024, out bool _) += count;
                         }
                     }
-                }
-
-                foreach (var (id, count) in seen)
-                {
-                    seededStones.Enqueue((id, count));
-                }
-                seen.Clear();
-
-                static void Add(Dictionary<long, long> seen, long id, long count)
-                {
-                    CollectionsMarshal.GetValueRefOrAddDefault(seen, id, out _) += count;
                 }
             }
 
@@ -81,8 +69,8 @@
                 if (numberOfDigits % 2 != 0) return (false, 0, 0);
 
                 var pow10 = Pow10Approx(numberOfDigits / 2);
-                var div = Math.DivRem(n, pow10, out var left);
-                return (true, div, left);
+                var div = Math.DivRem(n, pow10, out var remainder);
+                return (true, div, remainder);
 
                 static long Pow10Approx(int p) => p switch
                 {
