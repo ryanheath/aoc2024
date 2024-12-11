@@ -71,30 +71,46 @@
 
                 static void Add(Dictionary<long, long> seen, long id, long count)
                 {
-                    if (seen.TryGetValue(id, out var c))
-                    {
-                        seen[id] = c + count;
-                    }
-                    else
-                    {
-                        seen[id] = count;
-                    }
+                    CollectionsMarshal.GetValueRefOrAddDefault(seen, id, out _) += count;
                 }
             }
 
             static (bool splitted, long left, long right) Split(long n)
             {
-                var numberOfDigits = NumberOfDigits(n);
+                var numberOfDigits = NumberOfDigitsApprox(n);
                 if (numberOfDigits % 2 != 0) return (false, 0, 0);
 
-                var pow10 = Pow10(numberOfDigits / 2);
-                return (true, n / pow10, n % pow10);
+                var pow10 = Pow10Approx(numberOfDigits / 2);
+                var div = Math.DivRem(n, pow10, out var left);
+                return (true, div, left);
 
-                static int NumberOfDigits(long n) => (int)Math.Floor(Math.Log10(n) + 1);
-                static long Pow10(int p) => (long)Math.Pow(10, p);
+                static long Pow10Approx(int p) => p switch
+                {
+                    0 => 1,
+                    1 => 10,
+                    2 => 100,
+                    3 => 1000,
+                    4 => 10000,
+                    5 => 100000,
+                    _ => 1000000,
+                };
+                static int NumberOfDigitsApprox(long n) => n switch
+                {
+                    < 10 => 1,
+                    < 100 => 2,
+                    < 1000 => 3,
+                    < 10000 => 4,
+                    < 100000 => 5,
+                    < 1000000 => 6,
+                    < 10000000 => 7,
+                    < 100000000 => 8,
+                    < 1000000000 => 9,
+                    < 10000000000 => 10,
+                    < 100000000000 => 11,
+                    _ => 12
+                };
             }
         }
-
         static long[] Parse(string[] lines) => lines[0].ToLongs(" ");
     }
 }
