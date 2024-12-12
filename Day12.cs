@@ -115,20 +115,13 @@
                 {
                     regions.Add((plant, [(x, y)]));
                 }
-                else if (nIndex == -1 && wIndex != -1)
+                else 
                 {
-                    regions[wIndex].plots.Add((x, y));
-                }
-                else if (nIndex != -1 && wIndex == -1)
-                {
-                    regions[nIndex].plots.Add((x, y));
-                }
-                else
-                {
-                    regions[nIndex].plots.Add((x, y));
-                    if (nIndex != wIndex)
+                    var keep = nIndex == -1 ? regions[wIndex] : regions[nIndex];
+                    keep.plots.Add((x, y));
+                    if (nIndex != wIndex && nIndex != -1 && wIndex != -1)
                     {
-                        regions[nIndex].plots.UnionWith(regions[wIndex].plots);
+                        keep.plots.UnionWith(regions[wIndex].plots);
                         regions.RemoveAt(wIndex);
                     }
                 }
