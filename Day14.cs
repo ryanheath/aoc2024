@@ -69,23 +69,9 @@
                 }
                 s++;
 
-                // just try to find a block of 3x3 robots next to each other
-                // each robot is in a cell, so we can just check if the 9 cells are occupied
+                // just find the first time when all robots are in a unique cell
                 var cells = robots.Select(r => r.y * h + r.x).ToHashSet();
-                foreach (var c1 in cells)
-                {
-                    var c2 = c1 + h;
-                    var c3 = c2 + 2 * h;
-                    if (!cells.Contains(c1 + 1)) continue;
-                    if (!cells.Contains(c1 + 2)) continue;
-                    if (!cells.Contains(c2 + 0)) continue;
-                    if (!cells.Contains(c2 + 1)) continue;
-                    if (!cells.Contains(c2 + 2)) continue;
-                    if (!cells.Contains(c3 + 0)) continue;
-                    if (!cells.Contains(c3 + 1)) continue;
-                    if (!cells.Contains(c3 + 2)) continue;
-                    return s;
-                }
+                if (cells.Count == robots.Length) return s;
             }
         }
 
