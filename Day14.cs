@@ -70,26 +70,20 @@
                 s++;
 
                 // just try to find a block of 3x3 robots next to each other
-                robots = robots.OrderBy(r => r.y).ThenBy(r => r.x).ToArray();
-                for (var i = 0; i < robots.Length; i++)
+                // each robot is in a cell, so we can just check if the 9 cells are occupied
+                var cells = robots.Select(r => r.y * h + r.x).ToHashSet();
+                foreach (var c1 in cells)
                 {
-                    var r1 = robots[i];
-                    var r2 = robots.Skip(i+1).Any(r => r1.x + 1 == r.x && r.y == r1.y + 0);
-                    if (!r2) continue;
-                    var r3 = robots.Skip(i+1).Any(r => r1.x + 2 == r.x && r.y == r1.y + 0);
-                    if (!r3) continue;
-                    var r4 = robots.Skip(i+1).Any(r => r1.x + 0 == r.x && r.y == r1.y + 1);
-                    if (!r4) continue;
-                    var r5 = robots.Skip(i+1).Any(r => r1.x + 1 == r.x && r.y == r1.y + 1);
-                    if (!r5) continue;
-                    var r6 = robots.Skip(i+1).Any(r => r1.x + 2 == r.x && r.y == r1.y + 1);
-                    if (!r6) continue;
-                    var r7 = robots.Skip(i+1).Any(r => r1.x + 0 == r.x && r.y == r1.y + 2);
-                    if (!r7) continue;
-                    var r8 = robots.Skip(i+1).Any(r => r1.x + 1 == r.x && r.y == r1.y + 2);
-                    if (!r8) continue;
-                    var r9 = robots.Skip(i+1).Any(r => r1.x + 2 == r.x && r.y == r1.y + 2);
-                    if (!r9) continue;
+                    var c2 = c1 + h;
+                    var c3 = c2 + 2 * h;
+                    if (!cells.Contains(c1 + 1)) continue;
+                    if (!cells.Contains(c1 + 2)) continue;
+                    if (!cells.Contains(c2 + 0)) continue;
+                    if (!cells.Contains(c2 + 1)) continue;
+                    if (!cells.Contains(c2 + 2)) continue;
+                    if (!cells.Contains(c3 + 0)) continue;
+                    if (!cells.Contains(c3 + 1)) continue;
+                    if (!cells.Contains(c3 + 2)) continue;
                     return s;
                 }
             }
