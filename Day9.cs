@@ -1,6 +1,4 @@
-﻿using static MathExtensions;
-
-static partial class Aoc2024
+﻿static partial class Aoc2024
 {
     public static void Day9()
     {
