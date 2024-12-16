@@ -142,7 +142,7 @@ static partial class Aoc2024
             }
         }
 
-        static Direction Rotate90(Direction d) => d = (Direction)(((int)d + 1) % 4);
+        static Direction Rotate90(Direction d) => (Direction)(((int)d + 1) % 4);
 
         static bool OutOfBounds(int x, int y, (int maxX, int maxY) dim) => x < 0 || x >= dim.maxX || y < 0 || y >= dim.maxY;
 
