@@ -59,11 +59,11 @@
 
             var lowestScore = int.MaxValue;
             var lowestScorePaths = new List<List<int>>();
-            var visited = new Dictionary<(int x, int y, Direction d), int>();
+            var visited = new Dictionary<int, int>();
             var trailheads = new Queue<(int x, int y, Direction d, int score, List<int> path)>();
 
-            visited[(sx, sy, Direction.E)] = 0;
-            trailheads.Enqueue((sx, sy, Direction.E, 0, [sy * h + sx]));
+            visited[CellDirectionIndex(sx, sy, Direction.E)] = 0;
+            trailheads.Enqueue((sx, sy, Direction.E, 0, [CellIndex(sx, sy)]));
 
             while (trailheads.Count > 0)
             {
@@ -96,14 +96,17 @@
                         return;
                     }
 
-                    if (visited.TryGetValue((x, y, d), out var visitedScore) && visitedScore < score) return;
+                    if (visited.TryGetValue(CellDirectionIndex(x, y, d), out var visitedScore) && visitedScore < score) return;
 
-                    visited[(x, y, d)] = score;
-                    trailheads.Enqueue((x, y, d, score, [..trail.path, (y * h + x)]));
+                    visited[CellDirectionIndex(x, y, d)] = score;
+                    trailheads.Enqueue((x, y, d, score, [..trail.path, CellIndex(x, y)]));
                 }
             }
 
             return returnLowestScore ? lowestScore : lowestScorePaths.SelectMany(p => p).Distinct().Count() + 1; // +1 for E
+
+            int CellIndex(int x, int y) => y * h + x;
+            int CellDirectionIndex(int x, int y, Direction d) => y * 4 + x * h * 4 + (int)d;
         }
 
         static Direction RotateC90(Direction d) => (Direction)(((int)d + 1) % 4);
