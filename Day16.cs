@@ -45,6 +45,7 @@
         static int RunMaze(string[] map, bool returnLowestScore)
         {
             var h = map.Length;
+            var w = map[0].Length;
             // find S
             int sx = 0, sy = 0;
             foreach (var (y, line) in map.Index())
@@ -59,7 +60,7 @@
 
             var lowestScore = int.MaxValue;
             var lowestScorePaths = new List<PathNode>();
-            var visited = new Dictionary<int, int>();
+            var visited = new int[4*h*w];
             var trailheads = new Queue<(int x, int y, Direction d, int score, PathNode tail)>();
 
             visited[CellDirectionIndex(sx, sy, Direction.E, h)] = 0;
@@ -90,9 +91,11 @@
                         return;
                     }
 
-                    if (visited.TryGetValue(CellDirectionIndex(x, y, d, h), out var visitedScore) && visitedScore < score) return;
+                    var directionIndex = CellDirectionIndex(x, y, d, h);
+                    var visitedScore = visited[directionIndex];
+                    if (visitedScore != 0 && visitedScore < score) return;
 
-                    visited[CellDirectionIndex(x, y, d, h)] = score;
+                    visited[directionIndex] = score;
                     trailheads.Enqueue((x, y, d, score, new PathNode(CellIndex(x, y, h), trail.tail)));
                 }
             }
