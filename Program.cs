@@ -15,7 +15,7 @@
         .ToList()
         .ForEach(m => 
         {
-            Console.Write(m.Name.PadLeft(5));
+            Console.Write($"{m.Name,5}");
             var memBefore = GC.GetTotalAllocatedBytes();
             var start = Stopwatch.GetTimestamp();
 
@@ -26,12 +26,12 @@
             var memAfter = GC.GetTotalAllocatedBytes();
 
             var mem = memAfter - memBefore;
-            Console.WriteLine($" {elapsedMs:#,0.0} ms {mem/1024.0/1024:#,0.0} MB");
+            Console.WriteLine($" {elapsedMs,5:#,0.0} ms {mem/1024.0/1024,5:#,0.0} MB");
             totalMs += elapsedMs;
             totalMem += mem;
         });
     
-    Console.WriteLine($"Total: {totalMs:#,0.0} ms {totalMem/1024.0/1024:#,0.0} MB");
+    Console.WriteLine($"Total {totalMs,5:#,0.0} ms {totalMem/1024.0/1024,5:#,0.0} MB");
     Console.WriteLine("Done!");
 }
 catch (Exception e)
