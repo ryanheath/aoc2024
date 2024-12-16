@@ -62,25 +62,19 @@
             var visited = new Dictionary<int, int>();
             var trailheads = new Queue<(int x, int y, Direction d, int score, List<int> path)>();
 
-            visited[CellDirectionIndex(sx, sy, Direction.E)] = 0;
-            trailheads.Enqueue((sx, sy, Direction.E, 0, [CellIndex(sx, sy)]));
+            visited[CellDirectionIndex(sx, sy, Direction.E, h)] = 0;
+            trailheads.Enqueue((sx, sy, Direction.E, 0, [CellIndex(sx, sy, h)]));
 
             while (trailheads.Count > 0)
             {
                 var trail = trailheads.Dequeue();
-                var (dxcc, dycc, dx, dy, dxc, dyc) = trail.d switch
-                {
-                    Direction.E =>      ( 0, -1, +1,  0,  0, +1),
-                    Direction.S =>      (+1,  0,  0, +1, -1,  0),
-                    Direction.W =>      ( 0, +1, -1,  0,  0, -1),
-                    Direction.N or _ => (-1,  0,  0, -1, +1,  0)
-                };
-                Extend(trail.x + dxcc, trail.y + dycc, RotateCC90(trail.d), trail.score + 1001);
-                Extend(trail.x + dx,     trail.y + dy,             trail.d, trail.score + 1);
-                Extend(trail.x + dxc,   trail.y + dyc,  RotateC90(trail.d), trail.score + 1001);
+                Extend(RotateCC90(trail.d), trail.score + 1001);
+                Extend(            trail.d, trail.score + 1);
+                Extend( RotateC90(trail.d), trail.score + 1001);
 
-                void Extend(int x, int y, Direction d, int score)
+                void Extend(Direction d, int score)
                 {
+                    var (x, y) = NextPosition(trail.x, trail.y, d);
                     var c = map[y][x];
                     
                     if (c == '#') return;
@@ -96,17 +90,24 @@
                         return;
                     }
 
-                    if (visited.TryGetValue(CellDirectionIndex(x, y, d), out var visitedScore) && visitedScore < score) return;
+                    if (visited.TryGetValue(CellDirectionIndex(x, y, d, h), out var visitedScore) && visitedScore < score) return;
 
-                    visited[CellDirectionIndex(x, y, d)] = score;
-                    trailheads.Enqueue((x, y, d, score, [..trail.path, CellIndex(x, y)]));
+                    visited[CellDirectionIndex(x, y, d, h)] = score;
+                    trailheads.Enqueue((x, y, d, score, [..trail.path, CellIndex(x, y, h)]));
                 }
             }
 
             return returnLowestScore ? lowestScore : lowestScorePaths.SelectMany(p => p).Distinct().Count() + 1; // +1 for E
 
-            int CellIndex(int x, int y) => y * h + x;
-            int CellDirectionIndex(int x, int y, Direction d) => y * 4 + x * h * 4 + (int)d;
+            static int CellIndex(int x, int y, int h) => y * h + x;
+            static int CellDirectionIndex(int x, int y, Direction d, int h) => y * 4 + x * h * 4 + (int)d;
+            static (int x, int y) NextPosition(int x, int y, Direction d) => d switch
+            {
+                Direction.N => (x, y - 1),
+                Direction.E => (x + 1, y),
+                Direction.S => (x, y + 1),
+                Direction.W or _ => (x - 1, y)
+            };
         }
 
         static Direction RotateC90(Direction d) => (Direction)(((int)d + 1) % 4);
