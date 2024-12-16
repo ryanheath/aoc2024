@@ -29,20 +29,20 @@
                 #################
                 """.ToLines();
             Part1(input).Should().Be(11048);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(64);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(115500);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(679);
         }
 
-        int Part1(string[] lines) => GetScore(lines);
-        int Part2(string[] lines) => 0;
+        int Part1(string[] lines) => RunMaze(lines, returnLowestScore: true);
+        int Part2(string[] lines) => RunMaze(lines, returnLowestScore: false);
 
-        static int GetScore(string[] map)
+        static int RunMaze(string[] map, bool returnLowestScore)
         {
             // find S
             int sx = 0, sy = 0;
@@ -57,8 +57,9 @@
 
             var lowestScore = int.MaxValue;
             var visited = new Dictionary<(int x, int y, Direction d), int>();
-            var trailheads = new Queue<(int x, int y, Direction d, int score)>();
-            trailheads.Enqueue((sx, sy, Direction.E, 0));
+            var paths = new List<HashSet<(int, int)>>();
+            var trailheads = new Queue<(int x, int y, Direction d, int score, HashSet<(int, int)> path)>();
+            trailheads.Enqueue((sx, sy, Direction.E, 0, new HashSet<(int, int)>([(sx, sy)])));
             visited[(sx, sy, Direction.E)] = 0;
 
             while (trailheads.Count > 0)
@@ -92,6 +93,8 @@
 
                 void Extend(int dx, int dy, Direction d, int score)
                 {
+                    var newPath = new HashSet<(int, int)>(trail.path);
+                    newPath.Add((trail.x + dx, trail.y + dy));
                     var c = map[trail.y + dy][trail.x + dx];
 
                     if (c == '#')
@@ -101,22 +104,29 @@
 
                     if (c == 'E')
                     {
-                        lowestScore = Math.Min(lowestScore, score);
+                        if (score <= lowestScore)
+                        {
+                            if (score < lowestScore)
+                                // start over
+                                paths.Clear();
+                            lowestScore = score;
+                            paths.Add(newPath);
+                        }
                         return;
                     }
 
-                    if (visited.TryGetValue((trail.x + dx, trail.y + dy, d), out var visitedScore) && visitedScore <= score)
+                    if (visited.TryGetValue((trail.x + dx, trail.y + dy, d), out var visitedScore) && visitedScore < score)
                     {
                         return;
                     }
 
                     visited[(trail.x + dx, trail.y + dy, d)] = score;
 
-                    trailheads.Enqueue((trail.x + dx, trail.y + dy, d, score));
+                    trailheads.Enqueue((trail.x + dx, trail.y + dy, d, score, newPath));
                 }
             }
 
-            return lowestScore;
+            return returnLowestScore ? lowestScore : paths.SelectMany(p => p).ToHashSet().Count;
         }
     }
 }
