@@ -58,12 +58,12 @@
             }
 
             var lowestScore = int.MaxValue;
-            var lowestScorePaths = new List<List<int>>();
+            var lowestScorePaths = new List<PathNode>();
             var visited = new Dictionary<int, int>();
-            var trailheads = new Queue<(int x, int y, Direction d, int score, List<int> path)>();
+            var trailheads = new Queue<(int x, int y, Direction d, int score, PathNode tail)>();
 
             visited[CellDirectionIndex(sx, sy, Direction.E, h)] = 0;
-            trailheads.Enqueue((sx, sy, Direction.E, 0, [CellIndex(sx, sy, h)]));
+            trailheads.Enqueue((sx, sy, Direction.E, 0, new PathNode(CellIndex(sx, sy, h))));
 
             while (trailheads.Count > 0)
             {
@@ -85,7 +85,7 @@
                         {
                             if (score < lowestScore) lowestScorePaths.Clear(); // start over
                             lowestScore = score;
-                            lowestScorePaths.Add(trail.path);
+                            lowestScorePaths.Add(trail.tail);
                         }
                         return;
                     }
@@ -93,11 +93,11 @@
                     if (visited.TryGetValue(CellDirectionIndex(x, y, d, h), out var visitedScore) && visitedScore < score) return;
 
                     visited[CellDirectionIndex(x, y, d, h)] = score;
-                    trailheads.Enqueue((x, y, d, score, [..trail.path, CellIndex(x, y, h)]));
+                    trailheads.Enqueue((x, y, d, score, new PathNode(CellIndex(x, y, h), trail.tail)));
                 }
             }
 
-            return returnLowestScore ? lowestScore : lowestScorePaths.SelectMany(p => p).Distinct().Count() + 1; // +1 for E
+            return returnLowestScore ? lowestScore : lowestScorePaths.SelectMany(p => p.GetEnumerator()).Distinct().Count() + 1; // +1 for E
 
             static int CellIndex(int x, int y, int h) => y * h + x;
             static int CellDirectionIndex(int x, int y, Direction d, int h) => y * 4 + x * h * 4 + (int)d;
@@ -112,5 +112,15 @@
 
         static Direction RotateC90(Direction d) => (Direction)(((int)d + 1) % 4);
         static Direction RotateCC90(Direction d) => (Direction)PositiveMod(((int)d - 1), 4);
+    }
+    record class PathNode(int HashCode, PathNode? Previous = null)
+    {
+        public IEnumerable<int> GetEnumerator()
+        {
+            for (var node = this; node != null; node = node.Previous)
+            {
+                yield return node.HashCode;
+            }
+        }
     }
 }
