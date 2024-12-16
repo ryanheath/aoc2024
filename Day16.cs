@@ -52,6 +52,7 @@
                 if (x != -1)
                 {
                     (sx, sy) = (x, y);
+                    break;
                 }
             }
 
@@ -79,10 +80,9 @@
 
                 void Extend(int dx, int dy, Direction d, int score)
                 {
-                    var newPath = new HashSet<(int, int)>(trail.path);
-                    newPath.Add((trail.x + dx, trail.y + dy));
-                    var c = map[trail.y + dy][trail.x + dx];
-
+                    var (x, y) = (trail.x + dx, trail.y + dy);
+                    var c = map[y][x];
+                    
                     if (c == '#')
                     {
                         return;
@@ -96,19 +96,26 @@
                                 // start over
                                 paths.Clear();
                             lowestScore = score;
-                            paths.Add(newPath);
+
+                            var p = new HashSet<(int, int)>(trail.path);
+                            p.Add((x, y));
+
+                            paths.Add(p);
                         }
                         return;
                     }
 
-                    if (visited.TryGetValue((trail.x + dx, trail.y + dy, d), out var visitedScore) && visitedScore < score)
+                    if (visited.TryGetValue((x, y, d), out var visitedScore) && visitedScore < score) // <- < instead of <= make it slow, but is needed
                     {
                         return;
                     }
 
-                    visited[(trail.x + dx, trail.y + dy, d)] = score;
+                    visited[(x, y, d)] = score;
 
-                    trailheads.Enqueue((trail.x + dx, trail.y + dy, d, score, newPath));
+                    var newPath = new HashSet<(int, int)>(trail.path);
+                    newPath.Add((x, y));
+
+                    trailheads.Enqueue((x, y, d, score, newPath));
                 }
             }
 
