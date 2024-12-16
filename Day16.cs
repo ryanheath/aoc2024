@@ -66,30 +66,16 @@
             {
                 var trail = trailheads.Dequeue();
                 var score = trail.score;
-                if (trail.d == Direction.E)
+                var (dxcc, dycc, dcc, dx, dy, dxc, dyc, dc) = trail.d switch
                 {
-                    Extend( 0, -1, Direction.N, score + 1001);
-                    Extend(+1,  0, Direction.E, score + 1);
-                    Extend( 0, +1, Direction.S, score + 1001);
-                }
-                else if (trail.d == Direction.S)
-                {
-                    Extend(+1,  0, Direction.E, score + 1001);
-                    Extend( 0, +1, Direction.S, score + 1);
-                    Extend(-1,  0, Direction.W, score + 1001);
-                }
-                else if (trail.d == Direction.W)
-                {
-                    Extend( 0, +1, Direction.S, score + 1001);
-                    Extend(-1,  0, Direction.W, score + 1);
-                    Extend( 0, -1, Direction.N, score + 1001);
-                }
-                else if (trail.d == Direction.N)
-                {
-                    Extend(-1,  0, Direction.W, score + 1001);
-                    Extend( 0, -1, Direction.N, score + 1);
-                    Extend(+1,  0, Direction.E, score + 1001);
-                }
+                    Direction.E => (0, -1, Direction.N, +1, 0, 0, +1, Direction.S),
+                    Direction.S => (+1, 0, Direction.E, 0, +1, -1, 0, Direction.W),
+                    Direction.W => (0, +1, Direction.S, -1, 0, 0, -1, Direction.N),
+                    Direction.N or _ => (-1, 0, Direction.W, 0, -1, +1, 0, Direction.E)
+                };
+                Extend(dxcc, dycc,     dcc, score + 1001);
+                Extend(dx,     dy, trail.d, score + 1);
+                Extend(dxc,   dyc,      dc, score + 1001);
 
                 void Extend(int dx, int dy, Direction d, int score)
                 {
