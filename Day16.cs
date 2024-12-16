@@ -57,30 +57,29 @@
             }
 
             var lowestScore = int.MaxValue;
-            var visited = new Dictionary<(int x, int y, Direction d), int>();
             var uniqueCells = new List<(int, int)>();
+            var visited = new Dictionary<(int x, int y, Direction d), int>();
             var trailheads = new Queue<(int x, int y, Direction d, int score, List<(int, int)> path)>();
-            trailheads.Enqueue((sx, sy, Direction.E, 0, [(sx, sy)]));
+
             visited[(sx, sy, Direction.E)] = 0;
+            trailheads.Enqueue((sx, sy, Direction.E, 0, [(sx, sy)]));
 
             while (trailheads.Count > 0)
             {
                 var trail = trailheads.Dequeue();
-                var score = trail.score;
                 var (dxcc, dycc, dcc, dx, dy, dxc, dyc, dc) = trail.d switch
                 {
-                    Direction.E => (0, -1, Direction.N, +1, 0, 0, +1, Direction.S),
-                    Direction.S => (+1, 0, Direction.E, 0, +1, -1, 0, Direction.W),
-                    Direction.W => (0, +1, Direction.S, -1, 0, 0, -1, Direction.N),
-                    Direction.N or _ => (-1, 0, Direction.W, 0, -1, +1, 0, Direction.E)
+                    Direction.E =>      ( 0, -1, Direction.N, +1,  0,  0, +1, Direction.S),
+                    Direction.S =>      (+1,  0, Direction.E,  0, +1, -1,  0, Direction.W),
+                    Direction.W =>      ( 0, +1, Direction.S, -1,  0,  0, -1, Direction.N),
+                    Direction.N or _ => (-1,  0, Direction.W,  0, -1, +1,  0, Direction.E)
                 };
-                Extend(dxcc, dycc,     dcc, score + 1001);
-                Extend(dx,     dy, trail.d, score + 1);
-                Extend(dxc,   dyc,      dc, score + 1001);
+                Extend(trail.x + dxcc, trail.y + dycc,     dcc, trail.score + 1001);
+                Extend(trail.x + dx,     trail.y + dy, trail.d, trail.score + 1);
+                Extend(trail.x + dxc,   trail.y + dyc,      dc, trail.score + 1001);
 
-                void Extend(int dx, int dy, Direction d, int score)
+                void Extend(int x, int y, Direction d, int score)
                 {
-                    var (x, y) = (trail.x + dx, trail.y + dy);
                     var c = map[y][x];
                     
                     if (c == '#') return;
