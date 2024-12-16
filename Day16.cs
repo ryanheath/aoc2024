@@ -57,7 +57,7 @@
             }
 
             var lowestScore = int.MaxValue;
-            var uniqueCells = new List<(int, int)>();
+            var lowestScorePaths = new List<List<(int, int)>>();
             var visited = new Dictionary<(int x, int y, Direction d), int>();
             var trailheads = new Queue<(int x, int y, Direction d, int score, List<(int, int)> path)>();
 
@@ -88,9 +88,9 @@
                     {
                         if (score <= lowestScore)
                         {
-                            if (score < lowestScore) uniqueCells.Clear(); // start over
+                            if (score < lowestScore) lowestScorePaths.Clear(); // start over
                             lowestScore = score;
-                            uniqueCells.AddRange([..trail.path, (x, y)]);
+                            lowestScorePaths.Add(trail.path);
                         }
                         return;
                     }
@@ -102,7 +102,7 @@
                 }
             }
 
-            return returnLowestScore ? lowestScore : uniqueCells.Distinct().Count();
+            return returnLowestScore ? lowestScore : lowestScorePaths.SelectMany(p => p).Distinct().Count() + 1; // +1 for E
         }
     }
 }
