@@ -58,9 +58,9 @@
 
             var lowestScore = int.MaxValue;
             var visited = new Dictionary<(int x, int y, Direction d), int>();
-            var paths = new List<HashSet<(int, int)>>();
-            var trailheads = new Queue<(int x, int y, Direction d, int score, HashSet<(int, int)> path)>();
-            trailheads.Enqueue((sx, sy, Direction.E, 0, new HashSet<(int, int)>([(sx, sy)])));
+            var uniqueCells = new List<(int, int)>();
+            var trailheads = new Queue<(int x, int y, Direction d, int score, List<(int, int)> path)>();
+            trailheads.Enqueue((sx, sy, Direction.E, 0, [(sx, sy)]));
             visited[(sx, sy, Direction.E)] = 0;
 
             while (trailheads.Count > 0)
@@ -83,43 +83,27 @@
                     var (x, y) = (trail.x + dx, trail.y + dy);
                     var c = map[y][x];
                     
-                    if (c == '#')
-                    {
-                        return;
-                    }
+                    if (c == '#') return;
 
                     if (c == 'E')
                     {
                         if (score <= lowestScore)
                         {
-                            if (score < lowestScore)
-                                // start over
-                                paths.Clear();
+                            if (score < lowestScore) uniqueCells.Clear(); // start over
                             lowestScore = score;
-
-                            var p = new HashSet<(int, int)>(trail.path);
-                            p.Add((x, y));
-
-                            paths.Add(p);
+                            uniqueCells.AddRange([..trail.path, (x, y)]);
                         }
                         return;
                     }
 
-                    if (visited.TryGetValue((x, y, d), out var visitedScore) && visitedScore < score) // <- < instead of <= make it slow, but is needed
-                    {
-                        return;
-                    }
+                    if (visited.TryGetValue((x, y, d), out var visitedScore) && visitedScore < score) return;
 
                     visited[(x, y, d)] = score;
-
-                    var newPath = new HashSet<(int, int)>(trail.path);
-                    newPath.Add((x, y));
-
-                    trailheads.Enqueue((x, y, d, score, newPath));
+                    trailheads.Enqueue((x, y, d, score, [..trail.path, (x, y)]));
                 }
             }
 
-            return returnLowestScore ? lowestScore : paths.SelectMany(p => p).ToHashSet().Count;
+            return returnLowestScore ? lowestScore : uniqueCells.Distinct().Count();
         }
     }
 }
