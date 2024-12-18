@@ -37,25 +37,33 @@
                 2,0
                 """.ToLines();
             Part1(input, (7, 7), 12).Should().Be(22);
-            Part2(input).Should().Be(0);
+            Part2(input, (7, 7)).Should().Be((6,1));
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input, (71, 71), 1024).Should().Be(370);
-            Part2(input).Should().Be(0);
+            Part2(input, (71, 71)).Should().Be((65,6));
         }
 
         int Part1(string[] lines, (int x, int y) dim, int bytesFallen) => GetSmallestStep(dim, new (Parse(lines).Take(bytesFallen)));
-        int Part2(string[] lines) => 0;
+        (int, int) Part2(string[] lines, (int x, int y) dim) => GetHaltingByte(dim, new (Parse(lines)));
+
+        static (int,int) GetHaltingByte((int x, int y) dim, List<(int x, int y)> bytes)
+        {
+            for (var i = 0; i < bytes.Count; i++)
+                if (GetSmallestStep(dim, new (bytes[..i])) == int.MaxValue)
+                    return bytes[i - 1];
+
+            return (0, 0);
+        }
 
         static int GetSmallestStep((int x, int y) dim, HashSet<(int x, int y)> bytes)
         {
-            var trailheads = new Queue<ByteNode>();
-            trailheads.Enqueue(new (0, 0));
+            var trailheads = new Queue<(int x, int y, int steps)>();
+            trailheads.Enqueue(new (0, 0, 1));
 
-            var trails = new List<ByteNode>();
             var seen = new Dictionary<(int x, int y), int>();
             seen[(0, 0)] = 0;
 
@@ -71,45 +79,26 @@
                 {
                     var nx = trail.x + dx;
                     var ny = trail.y + dy;
-                    if (nx < 0 || nx >= dim.x || ny < 0 || ny >= dim.y)
-                    {
+                    var steps = trail.steps + 1;
+
+                    if (nx < 0 || nx >= dim.x || ny < 0 || ny >= dim.y
+                        || bytes.Contains((nx, ny))
+                        || seen.TryGetValue((nx, ny), out var seenSteps) && seenSteps <= steps)
                         return;
-                    }
-                    if (bytes.Contains((nx, ny)))
-                    {
-                        return;
-                    }
-                    var steps = trail.GetEnumerator().Count() + 1;
-                    if (seen.TryGetValue((nx, ny), out var seenSteps) && seenSteps <= steps)
-                    {
-                        return;
-                    }
+
                     seen[(nx, ny)] = steps;
-                    if (nx == dim.x-1 && ny == dim.y-1)
-                    {
-                        trails.Add(new (nx, ny, trail));
-                    }
-                    else
-                    {
-                        trailheads.Enqueue(new (nx, ny, trail));
-                    }
+
+                    if (nx == dim.x - 1 && ny == dim.y - 1)
+                        return;
+                    
+                    trailheads.Enqueue(new(nx, ny, steps));
                 }
             }
 
-            return seen[(dim.x-1, dim.y-1)] - 1;
+            return seen.TryGetValue((dim.x-1, dim.y-1), out var steps) ? steps - 1 : int.MaxValue;
         }
 
         static List<(int x, int y)> Parse(string[] lines) 
             => lines.Select(l => l.AsSpan().To2Ints(",")).ToList();
-    }
-    record class ByteNode(int x, int y, ByteNode? Previous = null)
-    {
-        public IEnumerable<(int x, int y)> GetEnumerator()
-        {
-            for (var node = this; node != null; node = node.Previous)
-            {
-                yield return (node.x, node.y);
-            }
-        }
     }
 }
