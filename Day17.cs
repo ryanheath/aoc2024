@@ -25,14 +25,14 @@
 
                 Program: 0,3,5,4,3,0
                 """.ToLines();
-            //Part2(input, one: true).Should().Be(117440);
+            Part2(input, one: true).Should().Be(117440);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().BeEquivalentTo([2,1,3,0,5,2,3,7,1]);
-            //Part2(input, one: false).Should().Be(0);
+            Part2(input, one: false).Should().Be(107416732707226);
         }
 
         int[] Part1(string[] lines) => Run(Parse(lines)).ToArray();
@@ -42,18 +42,19 @@
         {
             var (_, b, c, byteCode) = input;
 
-            Console.WriteLine("");
-            Console.WriteLine(string.Join(",", byteCode));
-
             // 32_768 first length of 6
             // 32_768 => 0,0,0,0, 1,0
             // pow 8     0 3 5 4 +2 0
 
             var a = 32_768 + Pow8(2)*3 + Pow8(3)*5 + Pow8(4)*4 + Pow8(5)*2;
             var output = Run((a, b, c, byteCode)).ToArray();
-            Console.WriteLine($"a={a} len={output.Length} {string.Join(",", output)}"); 
 
-            return a;
+            if (output.SequenceEqual(byteCode))
+            {
+                return a;
+            }
+            
+            return 0;
 
             static long Pow8(int n) => (long)Math.Pow(8, n);
         }
@@ -62,22 +63,22 @@
         {
             var (_, b, c, byteCode) = input;
 
-            Console.WriteLine("");
-            Console.WriteLine($"len={byteCode.Length} {string.Join(",", byteCode)}"); 
-            
             // pow(15) first length of 16
-            // pow(15) => 3,3,3,3,3,3,3,3,3,3,3,3,3,1,3,2
-
-            //var a = Pow8(15) + Pow8(2)*2 + Pow8(3)*4;
-            var a = Pow8(15);
-            for (; a < Pow8(15) + Pow8(1)*8; a += Pow8(0))
+            // 107416749484442 is too high
+            var tooHigh = 107416749484442;
+            var a = tooHigh;
+            var lowestA = a;
+            for (; a > Pow8(15); a -= 2097152) // octal 10_000_000
             {
                 var output = Run((a, b, c, byteCode)).ToArray();
-                Console.WriteLine($"len={output.Length} {string.Join(",", output)}"); 
-                Console.WriteLine($"a={a}"); 
+                if (a != tooHigh && output.SequenceEqual(byteCode))
+                {
+                    lowestA = a;
+                    break;
+                }
             }
 
-            return a;
+            return lowestA;
 
             static long Pow8(int n) => (long)Math.Pow(8, n);
         }
