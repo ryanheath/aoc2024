@@ -83,7 +83,7 @@
             static long Pow8(int n) => (long)Math.Pow(8, n);
         }
 
-        static IEnumerable<int> Run((Int128 a, Int128 b, Int128 c, int[] byteCode) input)
+        static IEnumerable<int> Run((long a, long b, long c, int[] byteCode) input)
         {
             var (a, b, c, byteCode) = input;
             var ip = 0;
@@ -113,7 +113,7 @@
                 void bxc() => b = xor(b, c);
                 void bdv() => b = dv();
                 void cdv() => c = dv();
-                Int128 cmb(int opr) => opr switch
+                long cmb(int opr) => opr switch
                 {
                     0 or 1 or 2 or 3 => opr,
                     4 => a,
@@ -122,9 +122,9 @@
                     _ => throw new UnreachableException()
                 };
 
-                Int128 dv() => a / (Int128)Math.Pow(2, (double)cmb(opr));
-                Int128 xor(Int128 x, Int128 y) => x ^ y;
-                Int128 mod8() => cmb(opr) & 0b111;
+                long dv() => a / (long)Math.Pow(2, cmb(opr));
+                long xor(long x, long y) => x ^ y;
+                long mod8() => cmb(opr) & 0b111;
             }
         }
 
