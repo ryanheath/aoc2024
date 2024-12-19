@@ -22,44 +22,91 @@
                 bbrgwb
                 """.ToLines();
             Part1(input).Should().Be(6);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(16);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input).Should().Be(355);
-            Part2(input).Should().Be(0);
+            Part2(input).Should().Be(732978410442050);
         }
 
         int Part1(string[] lines) => CountValids(Parse(lines));
-        int Part2(string[] lines) => 0;
+        long Part2(string[] lines) => CountAll(Parse(lines));
+
+        static long CountAll((string[] blocks, string[] configurations) input)
+        {
+            var founds = new Dictionary<string, long>();
+            var flookup = founds.GetAlternateLookup<ReadOnlySpan<char>>();
+
+            var notFounds = new HashSet<string>();
+            var nlookup = notFounds.GetAlternateLookup<ReadOnlySpan<char>>();
+
+            return input.configurations.Sum(x => PermutateAll(x.AsSpan()));
+
+            long PermutateAll(ReadOnlySpan<char> config)
+            {
+                if (flookup.TryGetValue(config, out var count))
+                    return count;
+                if (nlookup.Contains(config))
+                    return 0;
+
+                count = 0L;
+                foreach (var b in input.blocks)
+                {
+                    if (!config.EndsWith(b)) continue;
+                    if (b.Length == config.Length)
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        count += PermutateAll(config[..^(b.Length)]);
+                    }
+                }
+
+                if (count > 0)
+                {
+                    founds[config.ToString()] = count;
+                }
+                else
+                {
+                    notFounds.Add(config.ToString());
+                }
+
+                return count;
+            }
+        }
 
         static int CountValids((string[] blocks, string[] configurations) input)
         {
             var founds = new HashSet<string>();
+            var flookup = founds.GetAlternateLookup<ReadOnlySpan<char>>();
+ 
             var notFounds = new HashSet<string>();
+            var nlookup = notFounds.GetAlternateLookup<ReadOnlySpan<char>>();
 
-            return input.configurations.Where(IsValid).Count();
+            return input.configurations.Where(x => IsValid(x.AsSpan())).Count();
 
-            bool IsValid(string config)
+            bool IsValid(ReadOnlySpan<char> config)
             {
-                if (founds.Contains(config))
+                if (flookup.Contains(config))
                     return true;
-                if (notFounds.Contains(config))
+                if (nlookup.Contains(config))
                     return false;
 
                 foreach (var b in input.blocks)
                 {
-                    if (config.Length < b.Length || !config.EndsWith(b)) continue;
+                    if (!config.EndsWith(b)) continue;
                     if (b.Length == config.Length || IsValid(config[..^(b.Length)]))
                     {
-                        founds.Add(config);
+                        founds.Add(config.ToString());
                         return true;
                     }
                 }
 
-                notFounds.Add(config);
+                notFounds.Add(config.ToString());
                 return false;
             }
         }
