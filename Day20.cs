@@ -94,6 +94,10 @@
         static int GetCheats(string[] map, int saveAtLeast, int upTo)
         {
             var path = GetPath(map);
+            var pathSet = new Dictionary<int, int>();
+            for (var i = 0; i < path.Count; i++)
+                pathSet[Hash(path[i].x,path[i].y)] = i;
+            var seen = new HashSet<(int,int)>();
 
             var cheats = 0;
             for (var j = 0; j < path.Count; j++)
@@ -101,19 +105,20 @@
                 var (x, y) = path[j];
                 for (var i = 2; i <= upTo; i++)
                 {
-                    var seen = new HashSet<(int,int)>();
-                    for (var z = 0; z <= i; z++)
+                    seen.Clear();
+                    for (var d = 0; d <= i; d++)
                     {
-                        CheckCheats(+z, +i - z);
-                        CheckCheats(-z, +i - z);
-                        CheckCheats(+z, -i + z);
-                        CheckCheats(-z, -i + z);
+                        CheckCheats(+d, +i - d);
+                        CheckCheats(-d, +i - d);
+                        CheckCheats(+d, -i + d);
+                        CheckCheats(-d, -i + d);
                     }
 
                     void CheckCheats(int dx, int dy)
                     {
-                        var cut = (x + dx, y + dy);
-                        var cutCorner = path.IndexOf(cut);
+                        var cutx = x + dx;
+                        var cuty = y + dy;
+                        var cutCorner = pathSet.GetValueOrDefault(Hash(cutx, cuty), -1);
                         if (cutCorner == -1) return;
 
                         var distance = Math.Abs(dx) + Math.Abs(dy);
@@ -125,6 +130,8 @@
             }
 
             return cheats;
+
+            int Hash(int x, int y) => x * 1000 + y;
         }
 
         static List<(int x, int y)> GetPath(string[] map)
