@@ -50,49 +50,77 @@
             Part1(input, 6).Should().Be(16);
             Part1(input, 4).Should().Be(30);
             Part1(input, 2).Should().Be(44);
-            Part2(input).Should().Be(0);
+            /*
+            There are 32 cheats that save 50 picoseconds.
+            There are 31 cheats that save 52 picoseconds.
+            There are 29 cheats that save 54 picoseconds.
+            There are 39 cheats that save 56 picoseconds.
+            There are 25 cheats that save 58 picoseconds.
+            There are 23 cheats that save 60 picoseconds.
+            There are 20 cheats that save 62 picoseconds.
+            There are 19 cheats that save 64 picoseconds.
+            There are 12 cheats that save 66 picoseconds.
+            There are 14 cheats that save 68 picoseconds.
+            There are 12 cheats that save 70 picoseconds.
+            There are 22 cheats that save 72 picoseconds.
+            There are 4 cheats that save 74 picoseconds.
+            There are 3 cheats that save 76 picoseconds.
+            */
+            Part2(input, 76).Should().Be(3);
+            Part2(input, 74).Should().Be(7);
+            Part2(input, 72).Should().Be(29);
+            Part2(input, 70).Should().Be(41);
+            Part2(input, 68).Should().Be(55);
+            Part2(input, 66).Should().Be(67);
+            Part2(input, 64).Should().Be(86);
+            Part2(input, 62).Should().Be(106);
+            Part2(input, 60).Should().Be(129);
+            Part2(input, 58).Should().Be(154);
+            Part2(input, 56).Should().Be(193);
+            Part2(input, 54).Should().Be(222);
+            Part2(input, 52).Should().Be(253);
         }
 
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
             Part1(input, 100).Should().Be(1293);
-            Part2(input).Should().Be(0);
+            Part2(input, 100).Should().Be(977747);
         }
 
-        int Part1(string[] lines, int saveAtLeast) => GetCheats(lines, saveAtLeast);
-        int Part2(string[] lines) => 0;
+        int Part1(string[] lines, int saveAtLeast) => GetCheats(lines, saveAtLeast, 2);
+        int Part2(string[] lines, int saveAtLeast) => GetCheats(lines, saveAtLeast, 20);
 
-        static int GetCheats(string[] map, int saveAtLeast)
+        static int GetCheats(string[] map, int saveAtLeast, int upTo)
         {
             var path = GetPath(map);
-            var removedBlocks = new HashSet<(int x, int y)>();
 
             var cheats = 0;
             for (var j = 0; j < path.Count; j++)
             {
                 var (x, y) = path[j];
-                for (var i = 2; i >= 2; i--)
+                for (var i = 2; i <= upTo; i++)
                 {
-                    CheckCheats(+i, 0);
-                    CheckCheats(-i, 0);
-                    CheckCheats(0, +i);
-                    CheckCheats(0, -i);
-                }
+                    var seen = new HashSet<(int,int)>();
+                    for (var z = 0; z <= i; z++)
+                    {
+                        CheckCheats(+z, +i - z);
+                        CheckCheats(-z, +i - z);
+                        CheckCheats(+z, -i + z);
+                        CheckCheats(-z, -i + z);
+                    }
 
-                void CheckCheats(int dx, int dy)
-                {
-                    var block = (x: x + Math.Sign(dx), y: y + Math.Sign(dy));
-                    if (map[block.y][block.x] != '#') return;
+                    void CheckCheats(int dx, int dy)
+                    {
+                        var cut = (x + dx, y + dy);
+                        var cutCorner = path.IndexOf(cut);
+                        if (cutCorner == -1) return;
 
-                    var cut = (x + dx, y + dy);
-                    var cutCorner = path.IndexOf(cut);
-                    if (cutCorner == -1) return;
+                        var distance = Math.Abs(dx) + Math.Abs(dy);
 
-                    if (!removedBlocks.Add(block)) return;
-
-                    if ((cutCorner - j - 2) >= saveAtLeast)
-                        cheats++;
+                        if ((cutCorner - j - distance) >= saveAtLeast && seen.Add((j, cutCorner)))
+                            cheats++;
+                    }
                 }
             }
 
