@@ -106,20 +106,20 @@
                     seen.Clear();
                     for (var d = 0; d <= i; d++)
                     {
-                        CheckCheats(+d, +i - d);
-                        CheckCheats(-d, +i - d);
-                        CheckCheats(+d, -i + d);
-                        CheckCheats(-d, -i + d);
-                    }
+                        var cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y+i-d), -1);
+                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                            cheats++;
 
-                    void CheckCheats(int dx, int dy)
-                    {
-                        var cutCorner = pathSet.GetValueOrDefault(Hash(x + dx, y + dy), -1);
-                        if (cutCorner == -1) return;
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y+i-d), -1);
+                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                            cheats++;
 
-                        var distance = Math.Abs(dx) + Math.Abs(dy);
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y-i+d), -1);
+                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                            cheats++;
 
-                        if ((cutCorner - j - distance) >= saveAtLeast && seen.Add((j, cutCorner)))
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y-i+d), -1);
+                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
                             cheats++;
                     }
                 }
