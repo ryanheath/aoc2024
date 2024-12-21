@@ -95,7 +95,7 @@
         {
             var path = GetPath(map);
             var pathSet = path.Index().ToDictionary(p => Hash(p.Item.x, p.Item.y), p => p.Index);
-            var seen = new HashSet<(int,int)>();
+            var seen = new HashSet<int>();
 
             var cheats = 0;
             for (var start = 0; start < path.Count; start++)
@@ -107,19 +107,19 @@
                     for (var d = 0; d <= end; d++)
                     {
                         var cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y+end-d), -1);
-                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add(Hash(start, cutCorner)))
                             cheats++;
 
                         cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y+end-d), -1);
-                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add(Hash(start, cutCorner)))
                             cheats++;
 
                         cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y-end+d), -1);
-                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add(Hash(start, cutCorner)))
                             cheats++;
 
                         cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y-end+d), -1);
-                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add(Hash(start, cutCorner)))
                             cheats++;
                     }
                 }
