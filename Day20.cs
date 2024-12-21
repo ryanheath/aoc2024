@@ -98,28 +98,28 @@
             var seen = new HashSet<(int,int)>();
 
             var cheats = 0;
-            for (var j = 0; j < path.Count; j++)
+            for (var start = 0; start < path.Count; start++)
             {
-                var (x, y) = path[j];
-                for (var i = 2; i <= upTo; i++)
+                var (x, y) = path[start];
+                for (var end = 2; end <= upTo; end++)
                 {
                     seen.Clear();
-                    for (var d = 0; d <= i; d++)
+                    for (var d = 0; d <= end; d++)
                     {
-                        var cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y+i-d), -1);
-                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                        var cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y+end-d), -1);
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
                             cheats++;
 
-                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y+i-d), -1);
-                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y+end-d), -1);
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
                             cheats++;
 
-                        cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y-i+d), -1);
-                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x+d, y-end+d), -1);
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
                             cheats++;
 
-                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y-i+d), -1);
-                        if (cutCorner != -1 && (cutCorner - j - i) >= saveAtLeast && seen.Add((j, cutCorner)))
+                        cutCorner = pathSet.GetValueOrDefault(Hash(x-d, y-end+d), -1);
+                        if (cutCorner != -1 && (cutCorner - start - end) >= saveAtLeast && seen.Add((start, cutCorner)))
                             cheats++;
                     }
                 }
