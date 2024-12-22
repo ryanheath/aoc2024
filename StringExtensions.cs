@@ -58,6 +58,7 @@ static class StringExtensions
     static public IEnumerable<int[]> ToInts(this string[] lines, string splitter) => lines.Select(line => line.ToInts(splitter));
 
     static public int[] ToInts(this string[] input) => [.. input.Select(int.Parse)];
+    static public long[] ToLongs(this string[] input) => [.. input.Select(long.Parse)];
 
     static public string Sort(this string input) => string.Concat(input.OrderBy(c => c));
 
