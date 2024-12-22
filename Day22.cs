@@ -46,16 +46,17 @@
             var secretSequences = new Dictionary<(int, int, int, int), int>();
             var prices = new int[nth];
             var changes = new int[nth + 1];
+            Dictionary<(int, int, int, int), int> priceSequences = new();
 
             for (var i = 0; i < secrets.Length; i++)
             {
                 GetPricesAndChanges(secrets[i], nth, prices, changes);
-                var priceSequences = GetPriceSequences(prices, changes);
+                GetPriceSequences(prices, changes, priceSequences);
                 foreach (var (sequence, price) in priceSequences)
-                    secretSequences[sequence] = secretSequences.GetValueOrDefault(sequence) + price;
+                    CollectionsMarshal.GetValueRefOrAddDefault(secretSequences, sequence, out _) += price;
             }
 
-            return secretSequences.OrderByDescending(kv => kv.Value).First().Value;
+            return secretSequences.Max(kv => kv.Value);
         }
 
         static void GetPricesAndChanges(long secret, int nth, int[] prices, int[] changes)
@@ -69,16 +70,15 @@
             }
         }
 
-        static Dictionary<(int, int, int, int), int> GetPriceSequences(int[] prices, int[] changes)
+        static void GetPriceSequences(int[] prices, int[] changes, Dictionary<(int, int, int, int), int> priceSequences)
         {
-            Dictionary<(int, int, int, int), int> priceSequences = new();
+            priceSequences.Clear();
             for (var i = 1; i < prices.Length - 4; i++)
             {
                 var sequence = (changes[i+0], changes[i+1], changes[i+2], changes[i+3]);
                 if (!priceSequences.ContainsKey(sequence))
-                    priceSequences[sequence] = prices[i+3];
+                    priceSequences.Add(sequence, prices[i+3]);
             }
-            return priceSequences;
         }
 
         static long GetNextSecret(long secret, int nth)
