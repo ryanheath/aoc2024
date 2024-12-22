@@ -43,10 +43,10 @@
 
         static int GetBestSequencePrice(long[] secrets, int nth)
         {
-            var secretSequences = new Dictionary<(int, int, int, int), int>();
+            var secretSequences = new Dictionary<int, int>();
             var prices = new int[nth];
             var changes = new int[nth + 1];
-            Dictionary<(int, int, int, int), int> priceSequences = new();
+            Dictionary<int, int> priceSequences = new();
 
             for (var i = 0; i < secrets.Length; i++)
             {
@@ -70,16 +70,18 @@
             }
         }
 
-        static void GetPriceSequences(int[] prices, int[] changes, Dictionary<(int, int, int, int), int> priceSequences)
+        static void GetPriceSequences(int[] prices, int[] changes, Dictionary<int, int> priceSequences)
         {
             priceSequences.Clear();
             for (var i = 1; i < prices.Length - 4; i++)
             {
-                var sequence = (changes[i+0], changes[i+1], changes[i+2], changes[i+3]);
+                var sequence = Hash(changes[i+0], changes[i+1], changes[i+2], changes[i+3]);
                 if (!priceSequences.ContainsKey(sequence))
                     priceSequences.Add(sequence, prices[i+3]);
             }
         }
+
+        static int Hash(int a, int b, int c, int d) => a * 11*11*11 + b * 11*11 + c * 11 + d;
 
         static long GetNextSecret(long secret, int nth)
         {
