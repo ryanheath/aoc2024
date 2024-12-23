@@ -43,7 +43,7 @@
                 tb-vc
                 td-yn
                 """.ToLines();
-            NumberOfSetsOf3(Parse(input), startT: false).Should().Be(12);
+            SetsOf3(Parse(input), startT: false).Count.Should().Be(12);
             Part1(input).Should().Be(7);
             Part2(input).Should().Be("co,de,ka,ta");
         }
@@ -55,10 +55,26 @@
             Part2(input).Should().Be("cw,dy,ef,iw,ji,jv,ka,ob,qv,ry,ua,wt,xz");
         }
 
-        int Part1(string[] lines) => NumberOfSetsOf3(Parse(lines));
+        int Part1(string[] lines) => SetsOf3(Parse(lines), startT: true).Count;
         string Part2(string[] lines) => LargestSet(Parse(lines));
 
         static string LargestSet(Dictionary<string, List<string>> lan)
+        {
+            var sets = SetsOf3(lan);
+
+            foreach (var (c, links) in lan)
+            foreach (var set in sets.Where(set => set.Contains(c)))
+            foreach (var link in links.Where(link => !set.Contains(link)))
+            {
+                var linked = lan[link];
+                if (set.All(c => linked.Contains(c)))
+                    set.Add(link);
+            }
+
+            return string.Join(',', sets.MaxBy(x => x.Count).Order());
+        }
+
+        static List<HashSet<string>> SetsOf3(Dictionary<string, List<string>> lan, bool startT = false)
         {
             List<HashSet<string>> sets = new();
 
@@ -74,48 +90,9 @@
 
                         if (!links.Contains(c3)) continue; // not connected
 
-                        sets.Add([c1, c2, c3]);
-                    }
-                }
-            }
-
-            foreach (var (c, links) in lan)
-            {
-                foreach (var set in sets.Where(set => set.Contains(c)))
-                {
-                    foreach (var link in links.Where(link => !set.Contains(link)))
-                    {
-                        var linked = lan[link];
-                        if (set.All(c => linked.Contains(c)))
-                        {
-                            set.Add(link);
-                        }
-                    }
-                }
-            }
-
-            return string.Join(',', sets.MaxBy(x => x.Count).Order());
-        }
-
-        static int NumberOfSetsOf3(Dictionary<string, List<string>> lan, bool startT = true)
-        {
-            var sets = 0;
-
-            foreach (var (c1, links) in lan.OrderBy(x => x.Key)) // handle in order to avoid double counting
-            {
-                foreach (var c2 in links)
-                {
-                    if (string.CompareOrdinal(c1, c2) > 0) continue; // avoid double counting
-                    
-                    foreach (var c3 in lan[c2])
-                    {
-                        if (string.CompareOrdinal(c2, c3) > 0) continue; // avoid double counting
-
-                        if (!links.Contains(c3)) continue; // not connected
-
                         if (startT && c1[0] != 't' && c2[0] != 't' && c3[0] != 't') continue;
 
-                        sets++;
+                        sets.Add([c1, c2, c3]);
                     }
                 }
             }
