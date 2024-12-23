@@ -76,7 +76,7 @@
                 next: ;
             }
 
-            return string.Join(',', sets.MaxBy(x => x.Count).Order().Select(Unhash));
+            return string.Join(',', sets.MaxBy(x => x.Count)!.Order().Select(Unhash));
         }
 
         static List<HashSet<int>> SetsOf3(Dictionary<int, List<int>> lan, bool startT = false)
