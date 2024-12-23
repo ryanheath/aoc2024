@@ -58,7 +58,7 @@
         int Part1(string[] lines) => SetsOf3(Parse(lines), startT: true).Count;
         string Part2(string[] lines) => LargestSet(Parse(lines));
 
-        static string LargestSet(Dictionary<string, List<string>> lan)
+        static string LargestSet(Dictionary<int, List<int>> lan)
         {
             var sets = SetsOf3(lan);
 
@@ -76,49 +76,53 @@
                 next: ;
             }
 
-            return string.Join(',', sets.MaxBy(x => x.Count).Order());
+            return string.Join(',', sets.MaxBy(x => x.Count).Order().Select(Unhash));
         }
 
-        static List<HashSet<string>> SetsOf3(Dictionary<string, List<string>> lan, bool startT = false)
+        static List<HashSet<int>> SetsOf3(Dictionary<int, List<int>> lan, bool startT = false)
         {
-            List<HashSet<string>> sets = new();
+            List<HashSet<int>> sets = new();
 
             foreach (var (c1, links) in lan.OrderBy(x => x.Key)) // handle in order to avoid double counting
+            foreach (var c2 in links)
             {
-                foreach (var c2 in links)
+                if (c1 > c2) continue; // avoid double counting
+                
+                foreach (var c3 in lan[c2])
                 {
-                    if (string.CompareOrdinal(c1, c2) > 0) continue; // avoid double counting
-                    
-                    foreach (var c3 in lan[c2])
-                    {
-                        if (string.CompareOrdinal(c2, c3) > 0) continue; // avoid double counting
+                    if (c2 > c3) continue; // avoid double counting
 
-                        if (!links.Contains(c3)) continue; // not connected
+                    if (!links.Contains(c3)) continue; // not connected
 
-                        if (startT && c1[0] != 't' && c2[0] != 't' && c3[0] != 't') continue;
+                    if (startT && UnhashFirst(c1) != 't' && UnhashFirst(c2) != 't' && UnhashFirst(c3) != 't') continue;
 
-                        sets.Add([c1, c2, c3]);
-                    }
+                    sets.Add([c1, c2, c3]);
                 }
             }
 
             return sets;
         }
 
-        static Dictionary<string, List<string>> Parse(string[] lines)
+        static Dictionary<int, List<int>> Parse(string[] lines)
         {
-            var lan = new Dictionary<string, List<string>>();
+            var lan = new Dictionary<int, List<int>>();
             foreach (var line in lines)
             {
                 var links = line.Split('-');
-                if (!lan.ContainsKey(links[0]))
-                    lan[links[0]] = new List<string>();
-                lan[links[0]].Add(links[1]);
-                if (!lan.ContainsKey(links[1]))
-                    lan[links[1]] = new List<string>();
-                lan[links[1]].Add(links[0]);
+                var c1 = Hash(links[0]);
+                var c2 = Hash(links[1]);
+                if (!lan.ContainsKey(c1))
+                    lan[c1] = new List<int>();
+                lan[c1].Add(c2);
+                if (!lan.ContainsKey(c2))
+                    lan[c2] = new List<int>();
+                lan[c2].Add(c1);
             }
             return lan;
         }
+
+        static int Hash(string s) => (s[0] - 'a') * 26 + (s[1] - 'a');
+        static char UnhashFirst(int i) => (char)('a' + i / 26);
+        static string Unhash(int i) => $"{UnhashFirst(i)}{(char)('a' + i % 26)}";
     }
 }
