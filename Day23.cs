@@ -63,12 +63,17 @@
             var sets = SetsOf3(lan);
 
             foreach (var (c, links) in lan)
-            foreach (var set in sets.Where(set => set.Contains(c)))
-            foreach (var link in links.Where(link => !set.Contains(link)))
+            foreach (var set in sets)
             {
-                var linked = lan[link];
-                if (set.All(c => linked.Contains(c)))
+                if (!set.Contains(c)) continue;
+                foreach (var link in links)
+                {
+                    var linked = lan[link];
+                    foreach (var c2 in set)
+                        if (!linked.Contains(c2)) goto next;
                     set.Add(link);
+                }
+                next: ;
             }
 
             return string.Join(',', sets.MaxBy(x => x.Count).Order());
