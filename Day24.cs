@@ -79,7 +79,7 @@
         void Compute()
         {
             var input = File.ReadAllLines($"{day.ToLowerInvariant()}.txt");
-            Part1(input).Should().Be(0);
+            Part1(input).Should().Be(63168299811048);
             Part2(input).Should().Be(0);
         }
 
@@ -104,19 +104,15 @@
                 var value = input.gates[src];
                 if (value != null) return value;
 
-                if (!dependencies.TryGetValue(src, out var dep)) return null;
-
-                var (src1, op, src2) = dep;
+                var (src1, op, src2) = dependencies[src];
                 var v1 = GetValue(src1);
                 var v2 = GetValue(src2);
-                if (v1 == null || v2 == null) return null;
-
+                
                 input.gates[src] = value = op switch
                 {
                     Op.AND => v1 & v2,
                     Op.OR => v1 | v2,
-                    Op.XOR => v1 ^ v2,
-                    _ => throw new Exception("Unknown op")
+                    Op.XOR or _ => v1 ^ v2,
                 };
 
                 return value;
